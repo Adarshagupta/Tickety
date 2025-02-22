@@ -248,9 +248,7 @@
             background: linear-gradient(to right, 
                 transparent, 
                 rgba(168, 85, 247, 0.2), 
-                rgba(244, 114, 182, 0.2), 
-                transparent
-            );
+                transparent);
         }
 
         .footer-brand {
@@ -552,7 +550,38 @@
         .hover-scale:hover {
             transform: scale(1.05);
         }
+
+        /* Cookie Consent Banner */
+        #cookie-consent {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            z-index: 9999;
+            display: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        #cookie-consent.show {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
     </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
     <div class="pull-to-refresh">
@@ -767,6 +796,23 @@
         </div>
     </footer>
 
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 col-md-7">
+                    <p class="mb-md-0">We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. 
+                        <a href="/privacy-policy" class="text-primary">Learn more</a>
+                    </p>
+                </div>
+                <div class="col-lg-4 col-md-5 text-md-end mt-3 mt-md-0">
+                    <button onclick="acceptCookies()" class="btn btn-primary me-2">Accept All</button>
+                    <button onclick="rejectCookies()" class="btn btn-outline-primary">Reject All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Pull to refresh functionality
@@ -822,6 +868,48 @@
                 window.history.back();
             }
         });
+
+        // Cookie consent management
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function acceptCookies() {
+            setCookie('cookie_consent', 'accepted', 365);
+            document.getElementById('cookie-consent').classList.remove('show');
+        }
+
+        function rejectCookies() {
+            setCookie('cookie_consent', 'rejected', 365);
+            document.getElementById('cookie-consent').classList.remove('show');
+        }
+
+        // Check if user has already made a choice
+        window.addEventListener('load', function() {
+            if (!getCookie('cookie_consent')) {
+                setTimeout(function() {
+                    document.getElementById('cookie-consent').classList.add('show');
+                }, 1000);
+            }
+        });
     </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html> 

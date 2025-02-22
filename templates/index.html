@@ -40,33 +40,22 @@
                 <div class="quick-booking-card bg-white rounded-4 shadow-sm p-4">
                     <h5 class="mb-4">Popular Right Now</h5>
                     <div class="trending-items">
+                        {% for event in events[:3] %}
                         <div class="trending-item p-3 mb-3 rounded-3 bg-light">
                             <div class="d-flex align-items-center">
-                                <i class="bi bi-music-note-beamed text-primary me-3"></i>
+                                <i class="bi bi-calendar-event text-primary me-3"></i>
                                 <div>
-                                    <h6 class="mb-1">Music Festival</h6>
-                                    <p class="small text-muted mb-0">From ₹499</p>
+                                    <h6 class="mb-1">{{ event.name }}</h6>
+                                    <p class="small text-muted mb-0">From ₹{{ "%.0f"|format(event.price_tiers|min_price) }}</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="trending-item p-3 mb-3 rounded-3 bg-light">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-train-front text-primary me-3"></i>
-                                <div>
-                                    <h6 class="mb-1">Delhi - Mumbai</h6>
-                                    <p class="small text-muted mb-0">Express Train</p>
-                                </div>
-                            </div>
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-calendar-x display-6 mb-3"></i>
+                            <p>No events available</p>
                         </div>
-                        <div class="trending-item p-3 rounded-3 bg-light">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-airplane text-primary me-3"></i>
-                                <div>
-                                    <h6 class="mb-1">BOM - DEL</h6>
-                                    <p class="small text-muted mb-0">From ₹2,999</p>
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
