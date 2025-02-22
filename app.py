@@ -1530,6 +1530,10 @@ def payment_success():
         flash('Payment verification failed')
         return redirect(url_for('wallet'))
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

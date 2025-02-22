@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: tickethub
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tickethub-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: tickethub-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: tickethub-db
+    plan: starter
+    ipAllowList: []
+
+redis:
+  - name: tickethub-redis
+    plan: starter
+    ipAllowList: [] 
