@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - {{ booking.event.name }}{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Summary -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="gradient-text mb-4">Order Summary</h5>
+                    <div class="d-flex align-items-center mb-4">
+                        {% if booking.event.featured_image %}
+                        <img src="{{ booking.event.get_featured_image_url() }}" alt="{{ booking.event.name }}" class="rounded-3" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% endif %}
+                        <div class="ms-3">
+                            <h6 class="mb-1">{{ booking.event.name }}</h6>
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="bi bi-calendar-event me-2"></i>
+                                <span>{{ booking.event.start_date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-details bg-light rounded-4 p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">{{ booking.num_tickets }} ticket{% if booking.num_tickets > 1 %}s{% endif %} × ₹{{ "%.2f"|format(booking.total_price / booking.num_tickets / 1.1) }}</span>
+                            <span>₹{{ "%.2f"|format(booking.total_price / 1.1) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Service fee</span>
+                            <span>₹{{ "%.2f"|format(booking.total_price * 0.1) }}</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <strong>₹{{ "%.2f"|format(booking.total_price) }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="gradient-text mb-4">Payment Details</h5>
+                    <div class="text-center mb-4">
+                        <button id="rzp-button" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-lock-fill me-2"></i>Pay ₹{{ "%.2f"|format(amount) }}
+                        </button>
+                    </div>
+
+                    <!-- Security Badge -->
+                    <div class="security-badge bg-light rounded-4 p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-shield-check text-success fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Secure Payment</h6>
+                                <p class="small text-muted mb-0">Your payment is processed securely by Razorpay.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="mt-4">
+                        <h6 class="mb-3">Accepted Payment Methods</h6>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="payment-method-badge">
+                                <i class="bi bi-credit-card me-2"></i>Credit/Debit Cards
+                            </div>
+                            <div class="payment-method-badge">
+                                <i class="bi bi-phone me-2"></i>UPI
+                            </div>
+                            <div class="payment-method-badge">
+                                <i class="bi bi-bank me-2"></i>Net Banking
+                            </div>
+                            <div class="payment-method-badge">
+                                <i class="bi bi-wallet2 me-2"></i>Wallets
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.gradient-text {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.payment-method-badge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.security-badge {
+    border: 1px solid #22c55e;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    transform: translateY(-2px);
+}
+</style>
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('rzp-button').onclick = function(e) {
+    var options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": "{{ amount * 100 }}",
+        "currency": "{{ currency }}",
+        "name": "{{ booking.event.name }}",
+        "description": "{{ booking.num_tickets }} Ticket(s)",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response) {
+            // Submit the payment details to our backend
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.href;
+
+            var fields = {
+                'razorpay_payment_id': response.razorpay_payment_id,
+                'razorpay_order_id': response.razorpay_order_id,
+                'razorpay_signature': response.razorpay_signature
+            };
+
+            for (var key in fields) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        },
+        "prefill": {
+            "name": "{{ current_user.name }}",
+            "email": "{{ current_user.email }}"
+        },
+        "theme": {
+            "color": "#6366f1"
+        }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+{% endblock scripts %} 

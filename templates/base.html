@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#a855f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}Ticket Booking{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #a855f7;
+            --primary-dark: #9333ea;
+            --primary-light: #c084fc;
+            --secondary-color: #f472b6;
+            --accent-color: #ec4899;
+            --background-color: #faf5ff;
+            --card-background: #ffffff;
+            --text-color: #1e1b4b;
+            --text-muted: #6b7280;
+            --border-color: #f3e8ff;
+            --hover-color: #f5f3ff;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .navbar {
+            background: var(--card-background) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            margin: 0 0.25rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color) !important;
+            background-color: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            background: var(--card-background);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.1);
+            border-color: var(--primary-light);
+        }
+
+        .card-header {
+            background: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem;
+        }
+
+        .btn {
+            border-radius: 1rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.01em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--accent-color));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px -2px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border-radius: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .badge.bg-primary-subtle {
+            background-color: var(--hover-color) !important;
+            color: var(--primary-color) !important;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 1rem;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
+            padding: 1rem 1.5rem;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(244, 114, 182, 0.05));
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-header h1 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header .lead {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            padding: 0.5rem 0;
+        }
+
+        .icon-box i {
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+
+        .table {
+            --bs-table-hover-bg: var(--hover-color);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .form-control, .input-group-text {
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+        }
+
+        .input-group .form-control:focus {
+            border-color: var(--primary-color);
+        }
+
+        .form-select {
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            background-position: right 1.25rem center;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+        }
+
+        .list-group-item {
+            border-color: var(--border-color);
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        footer {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.03), rgba(244, 114, 182, 0.03));
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 0;
+            margin-top: 5rem;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, 
+                transparent, 
+                rgba(168, 85, 247, 0.2), 
+                rgba(244, 114, 182, 0.2), 
+                transparent
+            );
+        }
+
+        .footer-brand {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 300px;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .footer-links i {
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--hover-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .social-link:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(168, 85, 247, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 1rem;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Glass effect for cards */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-background);
+            padding: 0.75rem;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            display: none;
+        }
+
+        .mobile-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .mobile-nav-item {
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-link i {
+            font-size: 1.25rem;
+        }
+
+        .mobile-nav-link.active {
+            color: var(--primary-color);
+            background: var(--hover-color);
+        }
+
+        /* Mobile Header */
+        .navbar {
+            padding: 1rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            .mobile-nav {
+                display: block;
+                padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+            }
+
+            .navbar-nav {
+                display: none;
+            }
+
+            body {
+                padding-bottom: calc(72px + env(safe-area-inset-bottom));
+            }
+
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .card {
+                border-radius: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .btn {
+                padding: 0.625rem 1rem;
+            }
+
+            .page-header {
+                padding: 2rem 0;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* Pull to refresh effect */
+        .pull-to-refresh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .pull-to-refresh.visible {
+            transform: translateY(0);
+        }
+
+        .pull-to-refresh i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Touch feedback */
+        .touch-feedback {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .touch-feedback::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1) translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .touch-feedback:active::after {
+            transform: scale(20) translate(-50%, -50%);
+            opacity: 0.3;
+        }
+
+        /* App-like transitions */
+        .page-transition {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Enhanced scrollbar for mobile */
+        @media (max-width: 991.98px) {
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--primary-light);
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pull-to-refresh">
+        <i class="bi bi-arrow-repeat"></i>
+    </div>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 touch-feedback" href="{{ url_for('index') }}">
+                <i class="bi bi-ticket-perforated-fill"></i>
+                Tickety
+            </a>
+            <div class="d-flex d-lg-none gap-2">
+                <button class="btn btn-icon touch-feedback" type="button" data-bs-toggle="search-modal">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% if current_user.is_authenticated %}
+                <button class="btn btn-icon touch-feedback" type="button" data-bs-toggle="notifications-modal">
+                    <i class="bi bi-bell"></i>
+                </button>
+                {% endif %}
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_host %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'host_dashboard' %}active{% endif %}" href="{{ url_for('host_dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Host Dashboard
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'become_host' %}active{% endif %}" href="{{ url_for('become_host') }}">
+                                    <i class="bi bi-person-plus"></i> Become a Host
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'my_bookings' %}active{% endif %}" href="{{ url_for('my_bookings') }}">
+                                <i class="bi bi-ticket-perforated"></i> My Bookings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-transition">
+        {% block header %}{% endblock %}
+
+        <div class="container my-4">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info alert-dismissible fade show animate-fade-in glass-effect" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <nav class="mobile-nav">
+        <ul class="mobile-nav-items">
+            <li class="mobile-nav-item">
+                <a class="mobile-nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                    <i class="bi bi-house-door"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_host %}
+                    <li class="mobile-nav-item">
+                        <a class="mobile-nav-link {% if request.endpoint == 'host_dashboard' %}active{% endif %}" href="{{ url_for('host_dashboard') }}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Host</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="mobile-nav-item">
+                        <a class="mobile-nav-link {% if request.endpoint == 'become_host' %}active{% endif %}" href="{{ url_for('become_host') }}">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Become Host</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link {% if request.endpoint == 'my_bookings' %}active{% endif %}" href="{{ url_for('my_bookings') }}">
+                        <i class="bi bi-ticket-perforated"></i>
+                        <span>Bookings</span>
+                    </a>
+                </li>
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link" href="{{ url_for('logout') }}">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Register</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <footer>
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-4">
+                    <a class="footer-brand d-inline-flex align-items-center gap-2" href="{{ url_for('index') }}">
+                        <i class="bi bi-ticket-perforated-fill"></i>
+                        <span class="gradient-text">Tickety</span>
+                    </a>
+                    <p class="footer-text">Your one-stop destination for booking tickets to the most exciting events, concerts, movies, and more.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="bi bi-twitter-x"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <h6 class="gradient-text mb-3">Quick Links</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}"><i class="bi bi-chevron-right"></i>Events</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i>About Us</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i>Contact</a></li>
+                        <li><a href="#"><i class="bi bi-chevron-right"></i>FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <h6 class="gradient-text mb-3">Event Categories</h6>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="bi bi-film"></i>Movies</a></li>
+                        <li><a href="#"><i class="bi bi-music-note-beamed"></i>Concerts</a></li>
+                        <li><a href="#"><i class="bi bi-trophy"></i>Sports</a></li>
+                        <li><a href="#"><i class="bi bi-stars"></i>Theater</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="gradient-text mb-3">Newsletter</h6>
+                    <p class="text-muted mb-3">Subscribe to get updates about new events and special offers.</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Enter your email">
+                        <button class="btn btn-primary" type="button">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-0">&copy; 2024 Tickety. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Pull to refresh functionality
+        let touchStart = 0;
+        let pullStarted = false;
+        const pullToRefresh = document.querySelector('.pull-to-refresh');
+
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                touchStart = e.touches[0].clientY;
+                pullStarted = true;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!pullStarted) return;
+            
+            const touch = e.touches[0].clientY;
+            const pull = touch - touchStart;
+            
+            if (pull > 0) {
+                pullToRefresh.classList.add('visible');
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            if (pullStarted) {
+                pullToRefresh.classList.remove('visible');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
+            }
+            pullStarted = false;
+        });
+
+        // Add touch feedback to all interactive elements
+        document.querySelectorAll('a, button, .card').forEach(element => {
+            element.classList.add('touch-feedback');
+        });
+
+        // Handle back gesture
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0].clientX;
+            const diff = touch - touchStartX;
+            
+            if (diff > 100) {
+                window.history.back();
+            }
+        });
+    </script>
+</body>
+</html> 

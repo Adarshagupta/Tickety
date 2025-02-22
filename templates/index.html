@@ -1,0 +1,786 @@
+{% extends "base.html" %}
+
+{% block title %}Tickety - Book Events, Trains & Flights{% endblock %}
+
+{% block header %}
+<div class="hero-section position-relative overflow-hidden min-vh-100 d-flex align-items-center">
+    <!-- Animated background gradient -->
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); animation: gradientAnimation 15s ease infinite; z-index: -1;"></div>
+    
+    <!-- Floating shapes -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-5 py-5" data-aos="fade-up" data-aos-delay="100">
+                <span class="badge bg-primary-subtle text-primary mb-3 px-3 py-2 rounded-pill">
+                    <i class="bi bi-stars me-2"></i>Welcome to Tickety
+                </span>
+                <h1 class="display-3 fw-bold mb-4 text-gradient">Your Gateway to Amazing Experiences</h1>
+                <p class="lead text-muted mb-4">Discover and book unforgettable events, seamless train journeys, and exciting flights - all in one place.</p>
+                
+                <!-- Quick Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
+                            <i class="bi bi-calendar-check text-primary mb-2"></i>
+                            <h4 class="mb-0">500+</h4>
+                            <p class="small text-muted mb-0">Events</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
+                            <i class="bi bi-train-front text-primary mb-2"></i>
+                            <h4 class="mb-0">100+</h4>
+                            <p class="small text-muted mb-0">Routes</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
+                            <i class="bi bi-people text-primary mb-2"></i>
+                            <h4 class="mb-0">10K+</h4>
+                            <p class="small text-muted mb-0">Users</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions d-flex flex-wrap gap-2 mb-4">
+                    <a href="#events-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                        <span>Events</span>
+                        <i class="bi bi-chevron-right ms-2"></i>
+                    </a>
+                    <a href="#trains-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
+                        <i class="bi bi-train-front text-primary me-2"></i>
+                        <span>Trains</span>
+                        <i class="bi bi-chevron-right ms-2"></i>
+                    </a>
+                    <a href="#flights-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
+                        <i class="bi bi-airplane text-primary me-2"></i>
+                        <span>Flights</span>
+                        <i class="bi bi-chevron-right ms-2"></i>
+                    </a>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="trust-badges d-flex align-items-center gap-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-check text-success me-2"></i>
+                        <span class="small">Secure Booking</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        <span class="small">24/7 Support</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-cash-coin text-warning me-2"></i>
+                        <span class="small">Best Price</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 d-none d-lg-block" data-aos="fade-left" data-aos-delay="200">
+                <!-- Quick Booking Card -->
+                <div class="quick-booking-card bg-white rounded-4 shadow-lg p-4 mb-4">
+                    <h5 class="mb-4">Popular Right Now</h5>
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
+                                <div class="d-flex align-items-center">
+                                    <div class="trending-icon me-3">
+                                        <i class="bi bi-music-note-beamed text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Music Festival</h6>
+                                        <p class="small text-muted mb-0">From $49</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
+                                <div class="d-flex align-items-center">
+                                    <div class="trending-icon me-3">
+                                        <i class="bi bi-train-front text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Delhi - Mumbai</h6>
+                                        <p class="small text-muted mb-0">Express Train</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
+                                <div class="d-flex align-items-center">
+                                    <div class="trending-icon me-3">
+                                        <i class="bi bi-airplane text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">BOM - DEL</h6>
+                                        <p class="small text-muted mb-0">From $99</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
+                                <div class="d-flex align-items-center">
+                                    <div class="trending-icon me-3">
+                                        <i class="bi bi-ticket-perforated text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Comedy Night</h6>
+                                        <p class="small text-muted mb-0">From $29</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- App Download Preview -->
+                <div class="app-preview d-flex align-items-center justify-content-end">
+                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=300&h=200&fit=crop" 
+                         alt="Mobile App" class="img-fluid rounded-4 shadow-lg">
+                    <div class="app-badges ms-4">
+                        <p class="small text-muted mb-2">Get our mobile app</p>
+                        <div class="d-flex gap-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
+                                 alt="App Store" style="height: 40px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+                                 alt="Play Store" style="height: 40px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-gradient {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .quick-stat {
+        transition: transform 0.3s ease;
+    }
+
+    .quick-stat:hover {
+        transform: translateY(-5px);
+    }
+
+    .quick-stat i {
+        font-size: 1.5rem;
+    }
+
+    .trending-item {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .trending-item:hover {
+        transform: translateY(-3px);
+        background: rgba(99, 102, 241, 0.1) !important;
+    }
+
+    .trending-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 12px;
+    }
+
+    .trending-icon i {
+        font-size: 1.25rem;
+    }
+
+    .quick-booking-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+
+    .quick-actions .btn {
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .quick-actions .btn:hover {
+        transform: translateX(5px);
+        background: white;
+    }
+
+    .trust-badges {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(5px);
+        border-radius: 100px;
+    }
+
+    .hover-scale {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+
+    .hover-float {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-float:hover {
+        transform: translateY(-10px);
+    }
+
+    .image-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1rem;
+    }
+
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        padding: 1.5rem;
+        color: white;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .image-card:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .floating-shapes .shape {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 100px;
+        height: 100px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 150px;
+        height: 150px;
+        top: 60%;
+        right: 10%;
+        animation-delay: 2s;
+    }
+
+    .shape-3 {
+        width: 70px;
+        height: 70px;
+        top: 30%;
+        right: 30%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes gradientAnimation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section id="booking-section" class="py-5">
+    <div class="container">
+        <div class="card booking-card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+                <nav class="booking-nav">
+                    <div class="nav nav-tabs nav-fill border-0" role="tablist">
+                        <button class="nav-link active py-4 px-4" data-bs-toggle="tab" data-bs-target="#events-tab" type="button">
+                            <i class="bi bi-calendar-event me-2"></i>Events
+                        </button>
+                        <button class="nav-link py-4 px-4" data-bs-toggle="tab" data-bs-target="#trains-tab" type="button">
+                            <i class="bi bi-train-front me-2"></i>Trains
+                        </button>
+                        <button class="nav-link py-4 px-4" data-bs-toggle="tab" data-bs-target="#flights-tab" type="button">
+                            <i class="bi bi-airplane me-2"></i>Flights
+                        </button>
+                    </div>
+                </nav>
+                <div class="tab-content p-4">
+                    <div class="tab-pane fade show active" id="events-tab">
+                        <form action="{{ url_for('index') }}" method="GET">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control form-control-lg border-0 bg-light" id="event-search" placeholder="Search events">
+                                        <label for="event-search">Search events</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <select class="form-select form-select-lg border-0 bg-light" id="event-category" name="category">
+                                            <option value="">All Categories</option>
+                                            <option value="standup">Standup Comedy</option>
+                                            <option value="sports">Sports</option>
+                                            <option value="music">Music & Dance</option>
+                                            <option value="theatre">Theatre</option>
+                                            <option value="workshop">Workshop</option>
+                                            <option value="conference">Conference</option>
+                                            <option value="exhibition">Exhibition</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <label for="event-category">Category</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control form-control-lg border-0 bg-light" id="event-start-date">
+                                        <label for="event-start-date">Date</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary btn-lg h-100 w-100 rounded-3 hover-scale">
+                                        <i class="bi bi-search me-2"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="trains-tab">
+                        <form action="{{ url_for('trains') }}" method="GET">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control station-search" name="source" placeholder="From station">
+                                        <label>From Station</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control station-search" name="destination" placeholder="To station">
+                                        <label>To Station</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" name="date" min="{{ today }}" required>
+                                        <label>Journey Date</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary h-100 w-100">
+                                        <i class="bi bi-search me-2"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="flights-tab">
+                        <form action="{{ url_for('flights') }}" method="GET">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control airport-search" name="origin" placeholder="From airport">
+                                        <label>From Airport</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control airport-search" name="destination" placeholder="To airport">
+                                        <label>To Airport</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" name="date" min="{{ today }}" required>
+                                        <label>Journey Date</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary h-100 w-100">
+                                        <i class="bi bi-search me-2"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="featured-events" class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">Featured</span>
+                <h2 class="h3 mb-0">Popular Events</h2>
+            </div>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">View All</a>
+        </div>
+
+        <div class="row g-4">
+            {% if events %}
+                {% for event in events[:3] %}
+                <div class="col-md-4">
+                    <div class="card event-card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            <div class="event-image rounded-top" style="height: 240px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1));">
+                                {% if event.featured_image %}
+                                <img src="{{ event.get_featured_image_url() }}" class="w-100 h-100 object-fit-cover" alt="{{ event.name }}">
+                                {% endif %}
+                            </div>
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge {% if event.available_seats > 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                    {{ event.available_seats }} seats left
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary mb-2">{{ event.event_type|title }}</span>
+                                    <h5 class="card-title mb-0">{{ event.name }}</h5>
+                                </div>
+                                <button class="btn btn-icon btn-outline-primary btn-sm" title="Add to favorites">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="event-details">
+                                <div class="d-flex align-items-center text-muted mb-2">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    <span>{{ event.start_date.strftime('%B %d, %Y %I:%M %p') }}</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted mb-2">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    <span>{{ event.venue }}</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="bi bi-currency-dollar me-2"></i>
+                                    <!-- Handle both JSON string and object cases -->
+                                    {% if event.price_tiers %}
+                                        {% set tiers = event.price_tiers if event.price_tiers is mapping else event.price_tiers|tojson|safe %}
+                                        <span>From ₹{{ "%.2f"|format(tiers|min_price) }}</span>
+                                    {% else %}
+                                        <span>Price not available</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white p-4 border-0">
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" 
+                               class="btn btn-primary w-100 {% if not event.available_seats %}disabled{% endif %}">
+                                {% if event.available_seats %}
+                                    <i class="bi bi-ticket-perforated me-2"></i>Book Now
+                                {% else %}
+                                    <i class="bi bi-x-circle me-2"></i>Sold Out
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x display-1 text-muted mb-4"></i>
+                        <h3>No Events Found</h3>
+                        <p class="text-muted">Check back later for upcoming events.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section id="how-it-works" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary mb-2">Simple Steps</span>
+            <h2 class="h3 mb-0">How It Works</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="icon-box-xl mx-auto mb-3">
+                            <i class="bi bi-search gradient-text"></i>
+                        </div>
+                        <h5 class="mb-2">Search</h5>
+                        <p class="text-muted small mb-0">Find events, trains, or flights that match your preferences</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="icon-box-xl mx-auto mb-3">
+                            <i class="bi bi-ticket-perforated gradient-text"></i>
+                        </div>
+                        <h5 class="mb-2">Select</h5>
+                        <p class="text-muted small mb-0">Choose your preferred seats or tickets</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="icon-box-xl mx-auto mb-3">
+                            <i class="bi bi-credit-card gradient-text"></i>
+                        </div>
+                        <h5 class="mb-2">Pay</h5>
+                        <p class="text-muted small mb-0">Secure payment with multiple options</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="icon-box-xl mx-auto mb-3">
+                            <i class="bi bi-check-circle gradient-text"></i>
+                        </div>
+                        <h5 class="mb-2">Enjoy</h5>
+                        <p class="text-muted small mb-0">Get instant confirmation and e-tickets</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="download-app" class="py-5">
+    <div class="container">
+        <div class="card glass-effect border-0 shadow-lg">
+            <div class="card-body p-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <span class="badge bg-primary-subtle text-primary mb-2">Mobile App</span>
+                        <h2 class="h3 mb-3">Get the Tickety App</h2>
+                        <p class="text-muted mb-4">Download our mobile app for a seamless booking experience. Book tickets anytime, anywhere!</p>
+                        <div class="d-flex gap-3">
+                            <a href="#" class="btn btn-dark">
+                                <i class="bi bi-apple me-2"></i>App Store
+                            </a>
+                            <a href="#" class="btn btn-dark">
+                                <i class="bi bi-google-play me-2"></i>Play Store
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 text-center">
+                        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop" 
+                             alt="Mobile App" class="img-fluid rounded-4 shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.02), rgba(244, 114, 182, 0.02));
+}
+
+.booking-card {
+    margin-top: -100px;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+}
+
+.booking-nav .nav-link {
+    padding: 1rem;
+    color: var(--text-muted);
+    border: none;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.booking-nav .nav-link:hover {
+    color: var(--primary-color);
+    background: var(--hover-color);
+}
+
+.booking-nav .nav-link.active {
+    color: var(--primary-color);
+    background: white;
+}
+
+.event-card {
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-image {
+    transition: all 0.3s ease;
+}
+
+.event-card:hover .event-image {
+    transform: scale(1.02);
+}
+
+.icon-box-xl {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: var(--hover-color);
+    transition: all 0.3s ease;
+}
+
+.icon-box-xl i {
+    font-size: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.card:hover .icon-box-xl {
+    transform: translateY(-5px);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+}
+
+@media (max-width: 991.98px) {
+    .booking-card {
+        margin-top: 0;
+    }
+
+    .hero-section {
+        padding: 2rem 0;
+        text-align: center;
+    }
+
+    .hero-section .btn-group {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stationInputs = document.querySelectorAll('.station-search');
+    const airportInputs = document.querySelectorAll('.airport-search');
+    
+    // Station search
+    stationInputs.forEach(input => {
+        input.addEventListener('input', async function() {
+            const query = this.value;
+            if (query.length < 2) return;
+            
+            try {
+                const response = await fetch(`/api/stations/search?q=${query}`);
+                const stations = await response.json();
+                
+                // Show suggestions
+                showStationSuggestions(this, stations);
+            } catch (error) {
+                console.error('Error fetching stations:', error);
+            }
+        });
+    });
+
+    // Airport search
+    airportInputs.forEach(input => {
+        input.addEventListener('input', async function() {
+            const query = this.value;
+            if (query.length < 2) return;
+            
+            try {
+                const response = await fetch(`/api/airports/search?q=${query}`);
+                const airports = await response.json();
+                
+                // Show suggestions
+                showAirportSuggestions(this, airports);
+            } catch (error) {
+                console.error('Error fetching airports:', error);
+            }
+        });
+    });
+});
+
+function showStationSuggestions(input, stations) {
+    // Implementation of station suggestions dropdown
+    // You can use a library like awesomplete or implement custom dropdown
+}
+
+function showAirportSuggestions(input, airports) {
+    // Get or create suggestions container
+    let container = input.parentNode.querySelector('.airport-suggestions');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'airport-suggestions';
+        input.parentNode.appendChild(container);
+    }
+    
+    // Clear previous suggestions
+    container.innerHTML = '';
+    
+    if (airports.length === 0) {
+        container.innerHTML = '<div class="suggestion-item text-muted">No airports found</div>';
+        return;
+    }
+    
+    // Add suggestions
+    airports.forEach(airport => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-airplane text-primary me-2"></i>
+                <div>
+                    <div class="airport-name">${airport.name}</div>
+                    <div class="airport-info text-muted small">
+                        <span class="badge bg-light me-1">${airport.iata}</span>
+                        ${airport.city}, ${airport.country}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => {
+            input.value = airport.iata;
+            container.innerHTML = '';
+        });
+        
+        container.appendChild(item);
+    });
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Become an Event Host - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="text-center">
+            <span class="badge bg-primary-subtle text-primary mb-2">Event Host</span>
+            <h1 class="h3 mb-2">Become an Event Host</h1>
+            <p class="text-muted mb-0">Start hosting your own events and reach thousands of potential attendees</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Organization Name</label>
+                            <input type="text" class="form-control" name="organization" required>
+                            <div class="invalid-feedback">Please enter your organization name</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Website</label>
+                            <input type="url" class="form-control" name="website" placeholder="https://">
+                            <div class="form-text">Optional, but recommended</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                            <div class="invalid-feedback">Please enter a valid phone number</div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please enter your address</div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="5" required></textarea>
+                            <div class="form-text">Tell us about your organization and the types of events you plan to host</div>
+                            <div class="invalid-feedback">Please provide a description</div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">Before you continue:</h6>
+                                <ul class="mb-0">
+                                    <li>Make sure you have the authority to represent your organization</li>
+                                    <li>Have necessary licenses and permits for hosting events</li>
+                                    <li>Read and understand our terms and conditions for event hosts</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a> and <a href="#" class="text-decoration-none">Host Guidelines</a>
+                                </label>
+                                <div class="invalid-feedback">You must agree before proceeding</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check2-circle me-2"></i>Register as Host
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-globe display-5 gradient-text mb-3"></i>
+                        <h5>Reach More People</h5>
+                        <p class="text-muted small mb-0">Get your events in front of thousands of potential attendees</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-graph-up display-5 gradient-text mb-3"></i>
+                        <h5>Grow Your Business</h5>
+                        <p class="text-muted small mb-0">Powerful tools to manage and scale your events</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-shield-check display-5 gradient-text mb-3"></i>
+                        <h5>Secure Platform</h5>
+                        <p class="text-muted small mb-0">Safe and reliable ticketing and payment processing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

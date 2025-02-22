@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Book Train Tickets - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('trains') }}" class="text-decoration-none">
+                        <i class="bi bi-train-front"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('train_detail', train_number=train.number) }}" class="text-decoration-none">
+                        {{ train.name }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Book Tickets</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="POST" class="needs-validation" novalidate>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="journey-summary mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary mb-2">{{ train.type }}</span>
+                                <h5 class="mb-1">{{ train.name }} ({{ train.number }})</h5>
+                                <div class="text-muted small">{{ journey_date }}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="h6 mb-1">{{ selected_class }}</div>
+                                <small class="text-muted">{{ class_type }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="text-center">
+                                <div class="small text-muted mb-1">Departure</div>
+                                <div class="h6 mb-0">{{ train.src_departure_time }}</div>
+                                <small class="text-muted">{{ train.from_station.name }}</small>
+                            </div>
+                            <div class="train-journey-line mx-4">
+                                <div class="line"></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="small text-muted mb-1">Arrival</div>
+                                <div class="h6 mb-0">{{ train.dest_arrival_time }}</div>
+                                <small class="text-muted">{{ train.to_station.name }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="gradient-text mb-4">Passenger Details</h5>
+                    
+                    <div class="passengers-container mb-4">
+                        {% for i in range(num_passengers) %}
+                        <div class="passenger-card mb-3 p-4 rounded" style="background: var(--hover-color);">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Passenger {{ i + 1 }}</h6>
+                                {% if i > 0 %}
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-passenger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" name="passengers[{{ i }}][name]" required>
+                                    <div class="invalid-feedback">Please enter passenger name</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-control" name="passengers[{{ i }}][age]" min="1" max="120" required>
+                                    <div class="invalid-feedback">Please enter valid age</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Gender</label>
+                                    <select class="form-select" name="passengers[{{ i }}][gender]" required>
+                                        <option value="">Select</option>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                        <option value="O">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select gender</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">ID Type</label>
+                                    <select class="form-select" name="passengers[{{ i }}][id_type]" required>
+                                        <option value="">Select</option>
+                                        <option value="aadhar">Aadhar Card</option>
+                                        <option value="pan">PAN Card</option>
+                                        <option value="passport">Passport</option>
+                                        <option value="driving">Driving License</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select ID type</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">ID Number</label>
+                                    <input type="text" class="form-control" name="passengers[{{ i }}][id_number]" required>
+                                    <div class="invalid-feedback">Please enter ID number</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary mb-4" id="add-passenger">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Add Passenger
+                    </button>
+
+                    <h5 class="gradient-text mb-4">Contact Details</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" name="contact_email" required>
+                            <div class="invalid-feedback">Please enter valid email</div>
+                            <div class="form-text">Booking confirmation will be sent to this email</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+91</span>
+                                <input type="tel" class="form-control" name="contact_phone" pattern="[0-9]{10}" required>
+                            </div>
+                            <div class="invalid-feedback">Please enter valid 10-digit phone number</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card glass-effect">
+                <div class="card-body p-4">
+                    <h5 class="gradient-text mb-4">Important Information</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="bi bi-clock text-primary me-3 fs-4"></i>
+                                <div>
+                                    <h6>Check-in Time</h6>
+                                    <p class="text-muted small mb-0">Please arrive at least 30 minutes before departure</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="bi bi-card-text text-primary me-3 fs-4"></i>
+                                <div>
+                                    <h6>ID Verification</h6>
+                                    <p class="text-muted small mb-0">Carry original ID proof for all passengers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="bi bi-bag text-primary me-3 fs-4"></i>
+                                <div>
+                                    <h6>Baggage Allowance</h6>
+                                    <p class="text-muted small mb-0">Up to 40kg per passenger allowed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="bi bi-shield-check text-primary me-3 fs-4"></i>
+                                <div>
+                                    <h6>Cancellation Protection</h6>
+                                    <p class="text-muted small mb-0">Free cancellation up to 24 hours before departure</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card booking-summary">
+                <div class="card-body p-4">
+                    <h5 class="gradient-text mb-4">Booking Summary</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Base Fare ({{ num_passengers }} × ₹{{ base_fare }})</span>
+                            <span>₹{{ base_fare * num_passengers }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Service Fee</span>
+                            <span>₹{{ service_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">GST (5%)</span>
+                            <span>₹{{ gst }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total Amount</span>
+                            <span>₹{{ total_amount }}</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-methods mb-4">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" required>
+                            <label class="form-check-label d-flex align-items-center" for="upi">
+                                <img src="{{ url_for('static', filename='img/upi.png') }}" alt="UPI" height="24" class="me-2">
+                                UPI Payment
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" required>
+                            <label class="form-check-label d-flex align-items-center" for="card">
+                                <i class="bi bi-credit-card text-primary me-2"></i>
+                                Credit/Debit Card
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="netbanking" value="netbanking" required>
+                            <label class="form-check-label d-flex align-items-center" for="netbanking">
+                                <i class="bi bi-bank text-primary me-2"></i>
+                                Net Banking
+                            </label>
+                        </div>
+                        <div class="invalid-feedback">Please select a payment method</div>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label small" for="terms">
+                            I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                        </label>
+                        <div class="invalid-feedback">You must agree before proceeding</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Proceed to Pay ₹{{ total_amount }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+.train-journey-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.train-journey-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+}
+
+.train-journey-line .line::before,
+.train-journey-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.train-journey-line .line::before {
+    left: 0;
+}
+
+.train-journey-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.booking-summary {
+    position: sticky;
+    top: 1rem;
+}
+
+@media (max-width: 991.98px) {
+    .booking-summary {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        transform: translateY(calc(100% - 60px));
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .booking-summary.expanded {
+        transform: translateY(0);
+    }
+
+    .booking-summary::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: var(--border-color);
+        border-radius: 2px;
+    }
+
+    body {
+        padding-bottom: 60px;
+    }
+
+    .mobile-nav {
+        display: none;
+    }
+}
+
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Add/Remove passenger
+document.getElementById('add-passenger').addEventListener('click', function() {
+    const container = document.querySelector('.passengers-container')
+    const template = container.children[0].cloneNode(true)
+    const index = container.children.length
+    
+    template.querySelectorAll('[name]').forEach(input => {
+        input.value = ''
+        input.name = input.name.replace('[0]', `[${index}]`)
+    })
+    
+    container.appendChild(template)
+})
+
+document.querySelector('.passengers-container').addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-passenger') || e.target.closest('.remove-passenger')) {
+        e.target.closest('.passenger-card').remove()
+    }
+})
+
+// Mobile booking summary
+if (window.innerWidth < 992) {
+    const summary = document.querySelector('.booking-summary')
+    let startY = 0
+    let currentY = 0
+    
+    summary.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].clientY
+        currentY = summary.getBoundingClientRect().top
+    })
+    
+    summary.addEventListener('touchmove', function(e) {
+        const deltaY = e.touches[0].clientY - startY
+        const newY = currentY + deltaY
+        
+        if (newY < window.innerHeight - 60 && newY > window.innerHeight - summary.offsetHeight) {
+            summary.style.transform = `translateY(${deltaY}px)`
+        }
+    })
+    
+    summary.addEventListener('touchend', function() {
+        const threshold = window.innerHeight - summary.offsetHeight / 2
+        const currentTop = summary.getBoundingClientRect().top
+        
+        if (currentTop > threshold) {
+            summary.classList.remove('expanded')
+            summary.style.transform = ''
+        } else {
+            summary.classList.add('expanded')
+            summary.style.transform = 'translateY(0)'
+        }
+    })
+}
+</script>
+{% endblock %} 

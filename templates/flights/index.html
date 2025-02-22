@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Search Flights - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">Flight Search</span>
+                <h1 class="h3 mb-0">Find Your Perfect Flight</h1>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="card glass-effect">
+            <div class="card-body p-4">
+                <form action="{{ url_for('search_flights') }}" method="GET" class="flight-search-form">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">From</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-airplane-engines"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0 airport-search" 
+                                       name="origin" placeholder="Enter departure airport" 
+                                       value="{{ origin if origin }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">To</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-airplane-fill"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0 airport-search" 
+                                       name="destination" placeholder="Enter arrival airport" 
+                                       value="{{ destination if destination }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Travel Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-calendar3"></i>
+                                </span>
+                                <input type="date" class="form-control border-start-0 ps-0" 
+                                       name="date" min="{{ today }}" value="{{ date if date }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if flights %}
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="gradient-text mb-0">Available Flights</h5>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Sort by
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item active" href="#">Departure Time</a></li>
+                    <li><a class="dropdown-item" href="#">Duration</a></li>
+                    <li><a class="dropdown-item" href="#">Price</a></li>
+                </ul>
+            </div>
+        </div>
+
+        {% for flight in flights %}
+        <div class="card mb-3 flight-card">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="airline-logo me-3">
+                                <i class="bi bi-airplane display-6 gradient-text"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-1">{{ flight.airline.name }}</h5>
+                                <span class="badge bg-light text-dark">{{ flight.flight_number }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-center">
+                                <div class="h5 mb-0">{{ flight.origin.time|format_time }}</div>
+                                <small class="text-muted">{{ flight.origin.code }}</small>
+                                {% if flight.origin.terminal %}
+                                <div class="badge bg-light text-dark">Terminal {{ flight.origin.terminal }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="flight-duration-line mx-3">
+                                <small class="text-muted">{{ flight.duration }}</small>
+                                <div class="line"></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="h5 mb-0">{{ flight.destination.time|format_time }}</div>
+                                <small class="text-muted">{{ flight.destination.code }}</small>
+                                {% if flight.destination.terminal %}
+                                <div class="badge bg-light text-dark">Terminal {{ flight.destination.terminal }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-success-subtle text-success">
+                                <i class="bi bi-check-circle me-1"></i>{{ flight.available_seats }} seats left
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end">
+                            <div class="text-end me-3">
+                                <small class="text-muted d-block">Starting from</small>
+                                <span class="h5 mb-0">{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount) }}</span>
+                            </div>
+                            <a href="{{ url_for('flight_details', flight_id=flight.id) }}" 
+                               class="btn btn-primary">
+                                <i class="bi bi-ticket-perforated me-2"></i>Select
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        {% if origin and destination %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="bi bi-airplane display-1 text-muted mb-4"></i>
+                <h3>No Flights Found</h3>
+                <p class="text-muted mb-4">We couldn't find any flights matching your criteria. Try different dates or airports.</p>
+                <a href="{{ url_for('flights') }}" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>New Search
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="gradient-text mb-4">Popular Routes</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="route-card p-3 rounded" style="background: var(--hover-color);">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-airplane text-primary me-2"></i>
+                                        <span>Delhi → Mumbai</span>
+                                    </div>
+                                    <span class="badge bg-light">DEL - BOM</span>
+                                </div>
+                                <small class="text-muted">2h 10m • from ₹5,999</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="route-card p-3 rounded" style="background: var(--hover-color);">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-airplane text-primary me-2"></i>
+                                        <span>Mumbai → Bangalore</span>
+                                    </div>
+                                    <span class="badge bg-light">BOM - BLR</span>
+                                </div>
+                                <small class="text-muted">1h 45m • from ₹4,499</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="route-card p-3 rounded" style="background: var(--hover-color);">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-airplane text-primary me-2"></i>
+                                        <span>Bangalore → Chennai</span>
+                                    </div>
+                                    <span class="badge bg-light">BLR - MAA</span>
+                                </div>
+                                <small class="text-muted">1h 05m • from ₹3,299</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.flight-duration-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.flight-duration-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+    margin-top: 0.5rem;
+}
+
+.flight-duration-line .line::before,
+.flight-duration-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.flight-duration-line .line::before {
+    left: 0;
+}
+
+.flight-duration-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.flight-card {
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+}
+
+.flight-card:hover {
+    transform: translateY(-2px);
+}
+
+.route-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.route-card:hover {
+    transform: translateY(-2px);
+    background: var(--hover-color-dark) !important;
+}
+
+.airport-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background: var(--hover-color);
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (max-width: 991.98px) {
+    .flight-duration-line {
+        margin: 1rem 0;
+    }
+
+    .col-md-4.text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+
+    .flight-card .btn {
+        width: 100%;
+    }
+
+    .airport-suggestions {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        max-height: 75vh;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .airport-suggestions.active {
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const airportInputs = document.querySelectorAll('.airport-search');
+    
+    airportInputs.forEach(input => {
+        // Create suggestions container
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.className = 'airport-suggestions';
+        input.parentNode.appendChild(suggestionsContainer);
+        
+        input.addEventListener('input', async function() {
+            const query = this.value;
+            if (query.length < 2) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.remove('active');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/airports/search?q=${encodeURIComponent(query)}`);
+                const airports = await response.json();
+                
+                // Show suggestions
+                showAirportSuggestions(this, airports, suggestionsContainer);
+                
+                // Add active class for mobile view
+                if (window.innerWidth < 992 && airports.length > 0) {
+                    suggestionsContainer.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            } catch (error) {
+                console.error('Error fetching airports:', error);
+            }
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Add close button for mobile view
+        if (window.innerWidth < 992) {
+            const closeButton = document.createElement('div');
+            closeButton.className = 'suggestions-close';
+            closeButton.innerHTML = `
+                <button type="button" class="btn btn-link text-muted p-3 w-100 text-start">
+                    <i class="bi bi-chevron-down me-2"></i>Close
+                </button>
+            `;
+            closeButton.addEventListener('click', () => {
+                suggestionsContainer.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            suggestionsContainer.insertBefore(closeButton, suggestionsContainer.firstChild);
+        }
+    });
+});
+
+function showAirportSuggestions(input, airports, container) {
+    container.innerHTML = window.innerWidth < 992 ? `
+        <div class="suggestions-close">
+            <button type="button" class="btn btn-link text-muted p-3 w-100 text-start">
+                <i class="bi bi-chevron-down me-2"></i>Close
+            </button>
+        </div>
+    ` : '';
+    
+    if (airports.length === 0) {
+        container.innerHTML += '<div class="suggestion-item text-muted">No airports found</div>';
+        return;
+    }
+    
+    airports.forEach(airport => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-airplane text-primary me-2"></i>
+                <div>
+                    <div class="airport-name">${airport.name}</div>
+                    <div class="airport-info text-muted small">
+                        <span class="badge bg-light me-1">${airport.iata}</span>
+                        ${airport.city}, ${airport.country}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => {
+            input.value = airport.iata;
+            container.innerHTML = '';
+            container.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        container.appendChild(item);
+    });
+}
+
+// Add click handlers for popular routes
+document.querySelectorAll('.route-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const [origin, destination] = this.querySelector('.badge').textContent.split(' - ');
+        document.querySelector('input[name="origin"]').value = origin;
+        document.querySelector('input[name="destination"]').value = destination;
+    });
+});
+</script>
+{% endblock %} 

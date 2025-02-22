@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Book Tickets - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white p-4 border-0">
+                    <h4 class="mb-2">Book Tickets</h4>
+                    <p class="mb-0">{{ event.name }}</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('book_event', event_id=event.id) }}">
+                        <!-- Event Summary -->
+                        <div class="event-summary mb-4">
+                            <div class="d-flex align-items-center">
+                                {% if event.featured_image %}
+                                <img src="{{ event.get_featured_image_url() }}" alt="{{ event.name }}" class="rounded-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                {% endif %}
+                                <div class="ms-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                                        <span>{{ event.start_date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-geo-alt text-primary me-2"></i>
+                                        <span>{{ event.venue }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Selection -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Select Tickets</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Ticket Type</label>
+                                <select name="ticket_tier" class="form-select-lg form-control bg-light border-0" required>
+                                    {% for tier in event.price_tiers %}
+                                    <option value="{{ tier.id }}" data-price="{{ tier.price }}">{{ tier.name }} - ₹{{ "%.2f"|format(tier.price) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Number of Tickets</label>
+                                <select name="num_tickets" class="form-select-lg form-control bg-light border-0" required>
+                                    {% for i in range(1, 11) %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Attendee Details -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Attendee Details</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" name="attendee_name" class="form-control bg-light border-0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="attendee_email" class="form-control bg-light border-0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" name="attendee_phone" class="form-control bg-light border-0">
+                            </div>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div class="price-breakdown bg-light rounded-4 p-4 mb-4">
+                            <h6 class="mb-3">Price Breakdown</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Price per ticket</span>
+                                <span class="ticket-price">${{ "%.2f"|format(event.price_tiers[0].price) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Number of tickets</span>
+                                <span class="ticket-quantity">1</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="subtotal">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">GST (18%)</span>
+                                <span class="service-fee">₹0.00</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total</strong>
+                                <strong class="total-price">${{ "%.2f"|format(event.price_tiers[0].price * 1.1) }}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Important Information -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Important Information</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span>E-tickets will be sent to your email</span>
+                                </li>
+                                <li class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span>Please arrive 30 minutes before the event</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span>Bring a valid ID for verification</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Payment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.form-select {
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+.price-breakdown {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    transform: translateY(-2px);
+}
+
+.event-summary {
+    position: relative;
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 1rem;
+}
+</style>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ticketTierSelect = document.querySelector('select[name="ticket_tier"]');
+    const numTicketsSelect = document.querySelector('select[name="num_tickets"]');
+    const ticketPriceSpan = document.querySelector('.ticket-price');
+    const ticketQuantitySpan = document.querySelector('.ticket-quantity');
+    const subtotalSpan = document.querySelector('.subtotal');
+    const serviceFeeSpan = document.querySelector('.service-fee');
+    const totalPriceSpan = document.querySelector('.total-price');
+
+    function updatePrices() {
+        const selectedTier = ticketTierSelect.options[ticketTierSelect.selectedIndex];
+        const numTickets = parseInt(numTicketsSelect.value);
+        const pricePerTicket = parseFloat(selectedTier.dataset.price);
+
+        const subtotal = pricePerTicket * numTickets;
+        const gst = subtotal * 0.18; // 18% GST
+        const total = subtotal + gst;
+
+        ticketPriceSpan.textContent = `₹${pricePerTicket.toFixed(2)}`;
+        ticketQuantitySpan.textContent = numTickets;
+        subtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+        serviceFeeSpan.textContent = `₹${gst.toFixed(2)}`;
+        totalPriceSpan.textContent = `₹${total.toFixed(2)}`;
+    }
+
+    ticketTierSelect.addEventListener('change', updatePrices);
+    numTicketsSelect.addEventListener('change', updatePrices);
+
+    // Initialize prices
+    updatePrices();
+});
+</script>
+{% endblock %} 

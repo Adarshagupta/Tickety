@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Bookings for {{ event.name }} - Tickety{% endblock title %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">Event Bookings</span>
+                <h1 class="h3 mb-2">{{ event.name }}</h1>
+                <p class="text-muted mb-0">{{ event.start_date.strftime('%B %d, %Y') }} at {{ event.venue }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('host_event_edit', event_id=event.id) }}" class="btn btn-light me-2">
+                    <i class="bi bi-pencil me-2"></i>Edit Event
+                </a>
+                <button class="btn btn-primary" onclick="exportBookings()">
+                    <i class="bi bi-download me-2"></i>Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock header %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Statistics Cards -->
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-ticket-perforated display-6 gradient-text"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">Total Tickets</h6>
+                        <h3 class="mb-0">{{ stats.total_tickets }}</h3>
+                    </div>
+                </div>
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-primary" style="width: {{ (stats.total_tickets / event.capacity * 100) if event.capacity > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-currency-rupee display-6 gradient-text"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">Total Revenue</h6>
+                        <h3 class="mb-0">${{ "%.2f"|format(stats.total_revenue) }}</h3>
+                    </div>
+                </div>
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-check-circle display-6 gradient-text"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">Checked In</h6>
+                        <h3 class="mb-0">{{ stats.checked_in }}</h3>
+                    </div>
+                </div>
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-info" style="width: {{ (stats.checked_in / stats.total_tickets * 100) if stats.total_tickets > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-x-circle display-6 gradient-text"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">Refunded</h6>
+                        <h3 class="mb-0">{{ stats.refunded }}</h3>
+                    </div>
+                </div>
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-danger" style="width: {{ (stats.refunded / stats.total_tickets * 100) if stats.total_tickets > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bookings Table -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">All Bookings</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchBookings" placeholder="Search bookings...">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Filter
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="filterBookings('all')">All</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="filterBookings('checked-in')">Checked In</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="filterBookings('not-checked-in')">Not Checked In</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="filterBookings('refunded')">Refunded</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="bookingsTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Customer</th>
+                                <th>Ticket Type</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Booked On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>
+                                    <span class="text-primary">#{{ booking.id }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar avatar-sm">
+                                                {% if booking.user.avatar %}
+                                                <img src="{{ booking.user.avatar }}" class="avatar-img rounded-circle" alt="">
+                                                {% else %}
+                                                <span class="avatar-text rounded-circle">{{ booking.user.name[:2].upper() }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">{{ booking.user.name }}</h6>
+                                            <small class="text-muted">{{ booking.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ booking.ticket_tier.name }}</td>
+                                <td>{{ booking.quantity }}</td>
+                                <td>${{ "%.2f"|format(booking.total_amount) }}</td>
+                                <td>
+                                    {% if booking.is_checked_in %}
+                                    <span class="badge bg-success-subtle text-success">Checked In</span>
+                                    {% elif booking.is_refunded %}
+                                    <span class="badge bg-danger-subtle text-danger">Refunded</span>
+                                    {% else %}
+                                    <span class="badge bg-primary-subtle text-primary">Confirmed</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ booking.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="viewBookingDetails({{ booking.id }})">
+                                                <i class="bi bi-eye me-2"></i>View Details
+                                            </a></li>
+                                            {% if not booking.is_checked_in and not booking.is_refunded %}
+                                            <li><a class="dropdown-item" href="#" onclick="checkIn({{ booking.id }})">
+                                                <i class="bi bi-check-circle me-2"></i>Check In
+                                            </a></li>
+                                            {% endif %}
+                                            {% if event.allow_refunds and not booking.is_refunded and not booking.is_checked_in %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="processRefund({{ booking.id }})">
+                                                <i class="bi bi-x-circle me-2"></i>Process Refund
+                                            </a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-ticket-detailed display-6 d-block mb-2"></i>
+                                        <p class="mb-0">No bookings found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Booking Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+// Search functionality
+document.getElementById('searchBookings').addEventListener('input', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#bookingsTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+    });
+});
+
+// Filter functionality
+function filterBookings(filter) {
+    const rows = document.querySelectorAll('#bookingsTable tbody tr');
+    
+    rows.forEach(row => {
+        const status = row.querySelector('td:nth-child(6) .badge').textContent;
+        
+        switch(filter) {
+            case 'checked-in':
+                row.style.display = status === 'Checked In' ? '' : 'none';
+                break;
+            case 'not-checked-in':
+                row.style.display = status === 'Confirmed' ? '' : 'none';
+                break;
+            case 'refunded':
+                row.style.display = status === 'Refunded' ? '' : 'none';
+                break;
+            default:
+                row.style.display = '';
+        }
+    });
+}
+
+// View booking details
+function viewBookingDetails(bookingId) {
+    fetch(`/api/bookings/${bookingId}`)
+        .then(response => response.json())
+        .then(data => {
+            const content = document.getElementById('bookingDetailsContent');
+            content.innerHTML = `
+                <div class="mb-4">
+                    <h6 class="mb-2">Customer Information</h6>
+                    <p class="mb-1">${data.user.name}</p>
+                    <p class="mb-1">${data.user.email}</p>
+                    <p class="mb-0">${data.user.phone || 'No phone number'}</p>
+                </div>
+                <div class="mb-4">
+                    <h6 class="mb-2">Ticket Information</h6>
+                    <p class="mb-1"><strong>Ticket Type:</strong> ${data.ticket_tier.name}</p>
+                    <p class="mb-1"><strong>Quantity:</strong> ${data.quantity}</p>
+                    <p class="mb-1"><strong>Price per Ticket:</strong> $${data.ticket_tier.price}</p>
+                    <p class="mb-0"><strong>Total Amount:</strong> $${data.total_amount}</p>
+                </div>
+                <div>
+                    <h6 class="mb-2">Booking Status</h6>
+                    <p class="mb-1"><strong>Booked On:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+                    <p class="mb-1"><strong>Status:</strong> ${data.is_checked_in ? 'Checked In' : data.is_refunded ? 'Refunded' : 'Confirmed'}</p>
+                    ${data.is_checked_in ? `<p class="mb-0"><strong>Checked In At:</strong> ${new Date(data.checked_in_at).toLocaleString()}</p>` : ''}
+                    ${data.is_refunded ? `<p class="mb-0"><strong>Refunded On:</strong> ${new Date(data.refunded_at).toLocaleString()}</p>` : ''}
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
+        });
+}
+
+// Check in functionality
+function checkIn(bookingId) {
+    if (confirm('Are you sure you want to check in this booking?')) {
+        fetch(`/api/bookings/${bookingId}/check-in`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to check in booking: ' + data.message);
+            }
+        });
+    }
+}
+
+// Process refund
+function processRefund(bookingId) {
+    if (confirm('Are you sure you want to process a refund for this booking? This action cannot be undone.')) {
+        fetch(`/api/bookings/${bookingId}/refund`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to process refund: ' + data.message);
+            }
+        });
+    }
+}
+
+// Export bookings
+function exportBookings() {
+    window.location.href = `/api/events/${{{ event.id }}}/bookings/export`;
+}
+</script>
+{% endblock scripts %} 

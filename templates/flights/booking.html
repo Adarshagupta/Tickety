@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Book Flight - {{ flight.airline.name }} {{ flight.flight_number }}{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('flights') }}" class="text-decoration-none">
+                        <i class="bi bi-airplane"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('flight_details', flight_id=flight.id) }}" class="text-decoration-none">
+                        {{ flight.airline.name }} {{ flight.flight_number }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Book Flight</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="gradient-text mb-4">Passenger Details</h5>
+                <form method="POST" action="{{ url_for('confirm_booking', flight_id=flight.id) }}" class="needs-validation" novalidate>
+                    {% for i in range(num_passengers) %}
+                    <div class="passenger-details mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="passenger-number">
+                                <span class="badge bg-primary-subtle text-primary">Passenger {{ i + 1 }}</span>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small">First Name</label>
+                                <input type="text" class="form-control" name="passengers[{{ i }}][first_name]" required>
+                                <div class="invalid-feedback">Please enter first name</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Last Name</label>
+                                <input type="text" class="form-control" name="passengers[{{ i }}][last_name]" required>
+                                <div class="invalid-feedback">Please enter last name</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Date of Birth</label>
+                                <input type="date" class="form-control" name="passengers[{{ i }}][dob]" required>
+                                <div class="invalid-feedback">Please enter date of birth</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Gender</label>
+                                <select class="form-select" name="passengers[{{ i }}][gender]" required>
+                                    <option value="">Select gender</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select gender</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Email</label>
+                                <input type="email" class="form-control" name="passengers[{{ i }}][email]" required>
+                                <div class="invalid-feedback">Please enter a valid email</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Phone</label>
+                                <input type="tel" class="form-control" name="passengers[{{ i }}][phone]" required>
+                                <div class="invalid-feedback">Please enter phone number</div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small">Passport Number</label>
+                                <input type="text" class="form-control" name="passengers[{{ i }}][passport]" required>
+                                <div class="invalid-feedback">Please enter passport number</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if not loop.last %}
+                    <hr class="my-4">
+                    {% endif %}
+                    {% endfor %}
+
+                    <div class="card glass-effect mb-4">
+                        <div class="card-body">
+                            <h6 class="gradient-text mb-3">Contact Details</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Contact Name</label>
+                                    <input type="text" class="form-control" name="contact_name" required>
+                                    <div class="invalid-feedback">Please enter contact name</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Contact Email</label>
+                                    <input type="email" class="form-control" name="contact_email" required>
+                                    <div class="invalid-feedback">Please enter a valid email</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Contact Phone</label>
+                                    <input type="tel" class="form-control" name="contact_phone" required>
+                                    <div class="invalid-feedback">Please enter phone number</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Alternative Phone (Optional)</label>
+                                    <input type="tel" class="form-control" name="alt_phone">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-effect mb-4">
+                        <div class="card-body">
+                            <h6 class="gradient-text mb-3">Additional Services</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services[]" value="meal" id="meal">
+                                        <label class="form-check-label" for="meal">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-cup-hot text-primary me-2"></i>
+                                                <div>
+                                                    <span class="d-block">Special Meal</span>
+                                                    <small class="text-muted">{{ flight.price.currency }} 15.00 per passenger</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services[]" value="baggage" id="baggage">
+                                        <label class="form-check-label" for="baggage">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-briefcase text-primary me-2"></i>
+                                                <div>
+                                                    <span class="d-block">Extra Baggage</span>
+                                                    <small class="text-muted">{{ flight.price.currency }} 25.00 per 5kg</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services[]" value="insurance" id="insurance">
+                                        <label class="form-check-label" for="insurance">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-shield-check text-primary me-2"></i>
+                                                <div>
+                                                    <span class="d-block">Travel Insurance</span>
+                                                    <small class="text-muted">{{ flight.price.currency }} 20.00 per passenger</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services[]" value="lounge" id="lounge">
+                                        <label class="form-check-label" for="lounge">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-star text-primary me-2"></i>
+                                                <div>
+                                                    <span class="d-block">Airport Lounge</span>
+                                                    <small class="text-muted">{{ flight.price.currency }} 30.00 per passenger</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check2-circle me-2"></i>Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card booking-summary">
+            <div class="card-body p-4">
+                <h5 class="gradient-text mb-4">Booking Summary</h5>
+                
+                <div class="flight-info mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="airline-logo me-3">
+                            <i class="bi bi-airplane display-6 gradient-text"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{{ flight.airline.name }}</h6>
+                            <span class="badge bg-light text-dark">{{ flight.flight_number }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="text-center">
+                            <div class="h5 mb-1">{{ flight.origin.time|format_time }}</div>
+                            <small class="text-muted">{{ flight.origin.code }}</small>
+                        </div>
+                        <div class="flight-duration-line mx-3">
+                            <small class="text-muted">{{ flight.duration }}</small>
+                            <div class="line"></div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h5 mb-1">{{ flight.destination.time|format_time }}</div>
+                            <small class="text-muted">{{ flight.destination.code }}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>{{ flight.origin.time|format_date }}</span>
+                        <span>{{ flight.cabin_class }}</span>
+                    </div>
+                </div>
+
+                <div class="price-details mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Base Fare ({{ num_passengers }} × {{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount) }})</span>
+                        <span>{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount * num_passengers) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Taxes & Fees</span>
+                        <span>{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount * num_passengers * 0.18) }}</span>
+                    </div>
+                    <div class="additional-services">
+                        <!-- Additional services will be added here via JavaScript -->
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Total</span>
+                        <span class="total-price">{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount * num_passengers * 1.18) }}</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mb-0" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>By proceeding with the booking, you agree to our terms and conditions.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.passenger-details {
+    position: relative;
+}
+
+.flight-duration-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.flight-duration-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+}
+
+.flight-duration-line .line::before,
+.flight-duration-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.flight-duration-line .line::before {
+    left: 0;
+}
+
+.flight-duration-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.booking-summary {
+    position: sticky;
+    top: 1rem;
+}
+
+.price-details {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.form-check {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-check:hover {
+    background: var(--hover-color);
+}
+
+.form-check-input:checked ~ .form-check-label {
+    color: var(--primary-color);
+}
+
+@media (max-width: 991.98px) {
+    .booking-summary {
+        position: static;
+        margin-bottom: 2rem;
+    }
+}
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+// Update price when selecting additional services
+const services = {
+    meal: { price: 15.00, label: 'Special Meal' },
+    baggage: { price: 25.00, label: 'Extra Baggage' },
+    insurance: { price: 20.00, label: 'Travel Insurance' },
+    lounge: { price: 30.00, label: 'Airport Lounge' }
+};
+
+const CURRENCY = '{{ flight.price.currency }}';
+const NUM_PASSENGERS = parseInt('{{ num_passengers }}');
+const BASE_PRICE = parseFloat('{{ flight.price.amount }}');
+
+document.querySelectorAll('input[name="services[]"]').forEach(checkbox => {
+    checkbox.addEventListener('change', updateTotalPrice);
+});
+
+function updateTotalPrice() {
+    const baseFare = BASE_PRICE * NUM_PASSENGERS;
+    const taxes = baseFare * 0.18;
+    let additionalCost = 0;
+    let additionalServicesHtml = '';
+    
+    document.querySelectorAll('input[name="services[]"]:checked').forEach(checkbox => {
+        const service = services[checkbox.value];
+        const serviceCost = service.price * NUM_PASSENGERS;
+        additionalCost += serviceCost;
+        additionalServicesHtml += `
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">${service.label} (${NUM_PASSENGERS} × ${CURRENCY} ${service.price.toFixed(2)})</span>
+                <span>${CURRENCY} ${serviceCost.toFixed(2)}</span>
+            </div>
+        `;
+    });
+    
+    const total = baseFare + taxes + additionalCost;
+    
+    document.querySelector('.additional-services').innerHTML = additionalServicesHtml;
+    document.querySelector('.total-price').textContent = `${CURRENCY} ${total.toFixed(2)}`;
+}
+</script>
+{% endblock %} 

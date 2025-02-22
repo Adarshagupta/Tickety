@@ -1,0 +1,8 @@
+<div class="d-flex align-items-center text-muted">
+    <i class="bi bi-currency-dollar me-2"></i>
+    {% if event.price_tiers %}
+        <span>From ${{ "%.2f"|format(event.price_tiers|min_price) }}</span>
+    {% else %}
+        <span>Price not available</span>
+    {% endif %}
+</div> 

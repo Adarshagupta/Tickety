@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">My Tickets</span>
+                <h1 class="h3 mb-0">My Bookings</h1>
+            </div>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Book More
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if bookings %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Event</th>
+                                <th>Date</th>
+                                <th>Tickets</th>
+                                <th>Total</th>
+                                <th class="pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="event-image-placeholder rounded" style="width: 48px; height: 48px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1));"></div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-1">{{ booking.event.name }}</h6>
+                                            <span class="badge bg-primary-subtle text-primary">{{ booking.event.event_type|title }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="icon-box">
+                                        <i class="bi bi-calendar-event"></i>
+                                        <span class="small">{{ booking.event.start_date.strftime('%b %d, %Y') }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ booking.num_tickets }} ticket{% if booking.num_tickets > 1 %}s{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Total Amount</span>
+                                        <span>₹{{ "%.2f"|format(booking.total_price) }}</span>
+                                    </div>
+                                </td>
+                                <td class="pe-4">
+                                    <span class="badge bg-success-subtle text-success">Confirmed</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile view of bookings -->
+                <div class="d-lg-none">
+                    {% for booking in bookings %}
+                    <div class="booking-card p-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1">{{ booking.event.name }}</h6>
+                                <span class="badge bg-primary-subtle text-primary">{{ booking.event.event_type|title }}</span>
+                            </div>
+                            <span class="badge bg-success-subtle text-success">Confirmed</span>
+                        </div>
+                        <div class="booking-details">
+                            <div class="icon-box mb-2">
+                                <i class="bi bi-calendar-event"></i>
+                                <span class="small">{{ booking.event.start_date.strftime('%B %d, %Y %I:%M %p') }}</span>
+                            </div>
+                            <div class="icon-box mb-2">
+                                <i class="bi bi-ticket-perforated"></i>
+                                <span class="small">{{ booking.num_tickets }} ticket{% if booking.num_tickets > 1 %}s{% endif %}</span>
+                            </div>
+                            <div class="icon-box">
+                                <i class="bi bi-currency-dollar"></i>
+                                <span class="small">₹{{ "%.2f"|format(booking.total_price) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="gradient-text mb-4">Booking Summary</h5>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded" style="background: var(--hover-color);">
+                                    <h3 class="gradient-text mb-1">{{ bookings|length }}</h3>
+                                    <span class="text-muted small">Total Bookings</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded" style="background: var(--hover-color);">
+                                    <h3 class="gradient-text mb-1">₹{{ "%.2f"|format(total_spent) }}</h3>
+                                    <span class="text-muted small">Total Spent</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="gradient-text mb-0">Upcoming Events</h5>
+                            <a href="#" class="text-decoration-none text-muted small">View All</a>
+                        </div>
+                        {% for booking in bookings[:3] %}
+                        <div class="upcoming-event mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="event-image-placeholder rounded" style="width: 64px; height: 64px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1));"></div>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">{{ booking.event.name }}</h6>
+                                    <div class="icon-box mb-1">
+                                        <i class="bi bi-calendar-event"></i>
+                                        <span class="small">{{ booking.event.start_date.strftime('%b %d, %Y') }}</span>
+                                    </div>
+                                    <div class="icon-box">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span class="small">{{ booking.event.venue }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="bi bi-ticket-detailed display-1 text-muted"></i>
+    </div>
+    <h3>No Bookings Yet</h3>
+    <p class="text-muted mb-4">You haven't made any bookings yet. Start exploring events!</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="bi bi-search me-2"></i>Browse Events
+    </a>
+</div>
+{% endif %}
+
+<style>
+.icon-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+}
+
+.icon-box i {
+    color: var(--primary-color);
+    font-size: 1.125rem;
+}
+
+.upcoming-event:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+@media (max-width: 991.98px) {
+    .table-responsive {
+        display: none;
+    }
+
+    .booking-card {
+        transition: all 0.3s ease;
+    }
+
+    .booking-card:active {
+        background-color: var(--hover-color);
+    }
+
+    .card {
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .upcoming-event {
+        margin-bottom: 1rem;
+    }
+
+    .upcoming-event:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>
+{% endblock %} 

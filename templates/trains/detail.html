@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}{{ train.name }} - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('trains') }}" class="text-decoration-none">
+                        <i class="bi bi-train-front"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ train.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary mb-2">{{ train.type }}</span>
+                        <h1 class="h3 mb-1">{{ train.name }}</h1>
+                        <div class="d-flex align-items-center text-muted">
+                            <span class="badge bg-light text-dark me-2">{{ train.number }}</span>
+                            <span>Runs {{ train.days|join(', ') }}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-icon btn-outline-primary" title="Share">
+                        <i class="bi bi-share"></i>
+                    </button>
+                </div>
+
+                <div class="train-journey mb-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="text-center">
+                            <div class="h4 mb-1">{{ train.src_departure_time }}</div>
+                            <h6 class="mb-1">{{ train.from_station.name }}</h6>
+                            <small class="text-muted">{{ train.from_station.code }}</small>
+                        </div>
+                        <div class="train-journey-line mx-4">
+                            <div class="d-flex justify-content-between text-muted small mb-2">
+                                <span>{{ train.duration }}</span>
+                                <span>{{ train.distance }} km</span>
+                            </div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h4 mb-1">{{ train.dest_arrival_time }}</div>
+                            <h6 class="mb-1">{{ train.to_station.name }}</h6>
+                            <small class="text-muted">{{ train.to_station.code }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass-effect mb-4">
+                    <div class="card-body">
+                        <h5 class="gradient-text mb-3">Route Information</h5>
+                        <div class="route-stops">
+                            {% for stop in train.route %}
+                            <div class="route-stop d-flex align-items-center mb-3">
+                                <div class="stop-marker me-3">
+                                    <div class="marker"></div>
+                                    {% if not loop.last %}
+                                    <div class="line"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ stop.station_name }}</h6>
+                                            <small class="text-muted">{{ stop.station_code }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="small">{{ stop.arrival }} - {{ stop.departure }}</div>
+                                            <small class="text-muted">Day {{ stop.day }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass-effect">
+                    <div class="card-body">
+                        <h5 class="gradient-text mb-3">Train Amenities</h5>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-wifi text-primary me-2"></i>
+                                    <span>WiFi Available</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cup-hot text-primary me-2"></i>
+                                    <span>Pantry Car</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-lightning-charge text-primary me-2"></i>
+                                    <span>Charging Points</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-snow text-primary me-2"></i>
+                                    <span>AC Available</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-shield-check text-primary me-2"></i>
+                                    <span>Security</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-bandaid text-primary me-2"></i>
+                                    <span>Medical Support</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card booking-card">
+            <div class="card-body p-4">
+                <h5 class="gradient-text mb-4">Seat Availability</h5>
+                
+                {% if availability %}
+                <div class="date-selector mb-4">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span class="fw-bold">{{ journey_date }}</span>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="availability-list mb-4">
+                    {% for class in availability %}
+                    <div class="availability-item mb-3 p-3 rounded" style="background: var(--hover-color);">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h6 class="mb-0">{{ class.class }}</h6>
+                                <small class="text-muted">{{ class.type }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="h6 mb-0">₹{{ class.fare }}</div>
+                                <small class="text-muted">Per person</small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge {% if class.available %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                {{ class.status }}
+                            </span>
+                            {% if class.available %}
+                            <a href="{{ url_for('book_train', train_number=train.number) }}?class={{ class.class }}&date={{ journey_date }}" 
+                               class="btn btn-sm btn-primary">
+                                Book Now
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>Fares shown are base fares. Additional charges may apply.</small>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-calendar-x display-4 text-muted mb-3"></i>
+                    <h5>No Availability</h5>
+                    <p class="text-muted small mb-0">Please try a different date or train.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.train-journey-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.train-journey-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+}
+
+.train-journey-line .line::before,
+.train-journey-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.train-journey-line .line::before {
+    left: 0;
+}
+
+.train-journey-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.route-stop {
+    position: relative;
+}
+
+.stop-marker {
+    position: relative;
+    width: 24px;
+}
+
+.stop-marker .marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    position: relative;
+    z-index: 1;
+}
+
+.stop-marker .line {
+    position: absolute;
+    top: 12px;
+    left: 5px;
+    bottom: -24px;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.booking-card {
+    position: sticky;
+    top: 1rem;
+}
+
+@media (max-width: 991.98px) {
+    .booking-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .booking-card .card-body {
+        padding: 1rem;
+    }
+
+    body {
+        padding-bottom: 400px;
+    }
+
+    .mobile-nav {
+        display: none;
+    }
+}
+</style>
+{% endblock %} 

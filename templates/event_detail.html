@@ -1,0 +1,688 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.name }} - Tickety{% endblock title %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden py-5 mb-4">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(244, 114, 182, 0.15)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('index') }}" class="text-decoration-none">
+                            <i class="bi bi-house"></i>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#" class="text-decoration-none">{{ event.event_type|title }}</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ event.name }}</li>
+                </ol>
+            </nav>
+            {% if current_user.is_authenticated and current_user.id == event.host_id %}
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-light">
+                    <i class="bi bi-pencil me-2"></i>Edit Event
+                </a>
+                <a href="{{ url_for('event_bookings', event_id=event.id) }}" class="btn btn-light">
+                    <i class="bi bi-ticket-detailed me-2"></i>View Bookings
+                </a>
+                {% if event.status == 'draft' %}
+                <form method="POST" action="{{ url_for('publish_event', event_id=event.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-globe me-2"></i>Publish
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <h1 class="display-4 fw-bold mb-2 text-gradient">{{ event.name }}</h1>
+        <p class="lead text-muted mb-0">{{ event.description[:200] }}{% if event.description|length > 200 %}...{% endif %}</p>
+    </div>
+</div>
+{% endblock header %}
+
+{% block content %}
+<div class="container">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="position-relative">
+                    <div class="event-image-placeholder rounded-top" style="height: 350px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1));">
+                        {% if event.featured_image %}
+                        <img src="{{ event.get_featured_image_url() }}" class="w-100 h-100 object-fit-cover" alt="{{ event.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-4">
+                        <span class="badge {% if event.available_seats > 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill px-3 py-2">
+                            <i class="bi {% if event.available_seats > 0 %}bi-check-circle{% else %}bi-x-circle{% endif %} me-2"></i>
+                            {{ event.available_seats }} seats available
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-2">
+                                <i class="bi bi-tag me-2"></i>{{ event.event_type|title }}
+                            </span>
+                        </div>
+                        <button class="btn btn-icon btn-outline-primary rounded-circle" title="Add to favorites">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    </div>
+
+                    <div class="event-details mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 bg-light rounded-4">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-lg bg-primary-subtle text-primary rounded-3 me-3">
+                                                <i class="bi bi-calendar-event"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Date & Time</small>
+                                                <strong>{{ event.start_date.strftime('%B %d, %Y') }}</strong>
+                                                <small class="d-block">{{ event.start_date.strftime('%I:%M %p') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 bg-light rounded-4">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-lg bg-primary-subtle text-primary rounded-3 me-3">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Location</small>
+                                                <strong>{{ event.venue }}</strong>
+                                                <small class="d-block">{{ event.venue_address }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 bg-light rounded-4">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-lg bg-primary-subtle text-primary rounded-3 me-3">
+                                                <i class="bi bi-currency-dollar"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Starting from</small>
+                                                <strong>${{ "%.2f"|format(event.price_tiers|min_price) }}</strong>
+                                                <small class="d-block">per ticket</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="gradient-text mb-3">About the Event</h5>
+                        <p class="mb-0">{{ event.description }}</p>
+                    </div>
+
+                    <div class="card glass-effect border-0 rounded-4 mb-0">
+                        <div class="card-body p-4">
+                            <h5 class="gradient-text mb-4">Important Information</h5>
+                            <div class="row g-4">
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center">
+                                        <div class="icon-box-xl bg-primary-subtle text-primary rounded-4 mx-auto mb-3">
+                                            <i class="bi bi-door-open"></i>
+                                        </div>
+                                        <h6 class="mb-1">Doors Open</h6>
+                                        <small class="text-muted">1 hour before</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center">
+                                        <div class="icon-box-xl bg-primary-subtle text-primary rounded-4 mx-auto mb-3">
+                                            <i class="bi bi-credit-card"></i>
+                                        </div>
+                                        <h6 class="mb-1">Payment</h6>
+                                        <small class="text-muted">Cards accepted</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center">
+                                        <div class="icon-box-xl bg-primary-subtle text-primary rounded-4 mx-auto mb-3">
+                                            <i class="bi bi-ticket-detailed"></i>
+                                        </div>
+                                        <h6 class="mb-1">Tickets</h6>
+                                        <small class="text-muted">E-tickets only</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="text-center">
+                                        <div class="icon-box-xl bg-primary-subtle text-primary rounded-4 mx-auto mb-3">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <h6 class="mb-1">Security</h6>
+                                        <small class="text-muted">Secure checkout</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card booking-card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="gradient-text mb-4">Book Tickets</h5>
+                    {% if current_user.is_authenticated %}
+                        {% if event.available_seats > 0 %}
+                        <form method="POST" action="{{ url_for('book_event', event_id=event.id) }}">
+                            <div class="mb-4">
+                                <label class="form-label small fw-medium">Select Ticket Type</label>
+                                <select name="ticket_tier" class="form-select form-select-lg mb-3 bg-light border-0" required>
+                                    {% for tier in event.price_tiers %}
+                                    <option value="{{ loop.index0 }}">{{ tier.name }} - ₹{{ "%.2f"|format(tier.price) }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <label class="form-label small fw-medium">Number of Tickets</label>
+                                <select name="num_tickets" class="form-select form-select-lg bg-light border-0" required>
+                                    {% set max_tickets = event.available_seats + 1 if event.available_seats < 10 else 11 %}
+                                    {% for i in range(1, max_tickets) %}
+                                    <option value="{{ i }}">{{ i }} ticket{% if i > 1 %}s{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="price-details mb-4 bg-light rounded-4 p-4">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted">Price per ticket</span>
+                                    <span class="fw-medium">₹{{ "%.2f"|format(event.price_tiers[0].price) if event.price_tiers else "0.00" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted">Service fee</span>
+                                    <span class="fw-medium">₹{{ "%.2f"|format(event.price_tiers[0].price * 0.1) if event.price_tiers else "0.00" }}</span>
+                                </div>
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h6 mb-0">Total</span>
+                                    <span class="h5 mb-0">₹{{ "%.2f"|format(event.price_tiers[0].price * 1.1) if event.price_tiers else "0.00" }}</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3">
+                                <i class="bi bi-ticket-perforated me-2"></i>Book Now
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="icon-box-xl bg-danger-subtle text-danger rounded-4 mx-auto mb-3">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <h5>Sold Out</h5>
+                            <p class="text-muted small mb-0">Sorry, this event is sold out.</p>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="icon-box-xl bg-primary-subtle text-primary rounded-4 mx-auto mb-3">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </div>
+                        <h5>Login Required</h5>
+                        <p class="text-muted small mb-4">Please login to book tickets for this event.</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg w-100 rounded-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Import custom fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+    --hover-gradient: linear-gradient(135deg, #4f46e5, #9333ea);
+    --surface-gradient: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1));
+    
+    /* Font variables */
+    --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', var(--font-primary);
+    
+    /* Font sizes */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    
+    /* Line heights */
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+}
+
+/* Apply base font */
+body {
+    font-family: var(--font-primary);
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.display-4 {
+    font-size: var(--text-4xl);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.lead {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    font-weight: 400;
+}
+
+.gradient-text {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: opacity 0.3s ease;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.badge {
+    font-family: var(--font-primary);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+}
+
+.btn {
+    font-family: var(--font-primary);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.form-label {
+    font-family: var(--font-primary);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #4b5563;
+}
+
+.price-details {
+    font-family: var(--font-primary);
+}
+
+.price-details .h5 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.breadcrumb {
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+}
+
+small {
+    font-size: var(--text-xs);
+    letter-spacing: 0.01em;
+}
+
+.text-muted {
+    color: #6b7280 !important;
+}
+
+strong {
+    font-weight: 600;
+    color: #111827;
+}
+
+.text-gradient:hover {
+    opacity: 0.9;
+}
+
+.booking-card {
+    position: sticky;
+    top: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.booking-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.icon-box-lg, .icon-box-xl {
+    transition: all 0.3s ease;
+}
+
+.icon-box-lg:hover, .icon-box-xl:hover {
+    transform: scale(1.05);
+    background: var(--hover-gradient) !important;
+    color: white !important;
+}
+
+.icon-box-lg {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.icon-box-lg i {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.icon-box-xl {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.icon-box-xl i {
+    font-size: 2rem;
+    transition: all 0.3s ease;
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.glass-effect:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.form-select-lg {
+    height: 3.5rem;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.form-select-lg:hover, .form-select-lg:focus {
+    background-color: #f8f9fa;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.1);
+}
+
+.btn-lg {
+    height: 3.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: var(--hover-gradient);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.breadcrumb-item a {
+    transition: all 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #6366f1;
+    transform: translateX(3px);
+}
+
+.event-image-placeholder {
+    position: relative;
+    overflow: hidden;
+}
+
+.event-image-placeholder img {
+    transition: transform 0.5s ease;
+}
+
+.event-image-placeholder:hover img {
+    transform: scale(1.05);
+}
+
+.price-details {
+    transition: all 0.3s ease;
+}
+
+.price-details:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 991.98px) {
+    .booking-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        max-height: 85vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease;
+    }
+
+    .booking-card .card-body {
+        padding: 1.5rem;
+    }
+
+    body {
+        padding-bottom: 450px;
+    }
+
+    .event-image-placeholder {
+        height: 250px !important;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.hover-float {
+    transition: transform 0.3s ease;
+    animation: float 6s ease-in-out infinite;
+}
+
+.hover-float:hover {
+    transform: translateY(-5px);
+}
+
+/* Add smooth page load animation */
+.page-header, .card {
+    animation: fadeInUp 0.6s ease backwards;
+}
+
+.event-details .col-md-4:nth-child(1) { animation-delay: 0.2s; }
+.event-details .col-md-4:nth-child(2) { animation-delay: 0.3s; }
+.event-details .col-md-4:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add ripple effect to buttons */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn:active::after {
+    width: 300%;
+    height: 300%;
+}
+</style>
+
+{% block scripts %}
+<script>
+// Update price details when changing ticket type or quantity
+document.querySelectorAll('select[name="ticket_tier"], select[name="num_tickets"]').forEach(select => {
+    select.addEventListener('change', updatePriceDetails);
+});
+
+function updatePriceDetails() {
+    const tierSelect = document.querySelector('select[name="ticket_tier"]');
+    const quantitySelect = document.querySelector('select[name="num_tickets"]');
+    const priceDetails = document.querySelector('.price-details');
+    
+    const tierIndex = parseInt(tierSelect.value);
+    const quantity = parseInt(quantitySelect.value);
+    const priceTiers = {{ event.price_tiers|tojson if event.price_tiers else '[]' }};
+    const tierPrice = priceTiers[tierIndex]?.price || 0;
+    
+    const basePrice = tierPrice * quantity;
+    const serviceFee = basePrice * 0.1;
+    const total = basePrice + serviceFee;
+    
+    // Create new content with fade animation
+    const newContent = `
+        <div class="d-flex justify-content-between mb-3" style="animation: fadeIn 0.3s ease">
+            <span class="text-muted">Price per ticket</span>
+            <span class="fw-medium">₹${tierPrice.toFixed(2)}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3" style="animation: fadeIn 0.3s ease 0.1s">
+            <span class="text-muted">Service fee</span>
+            <span class="fw-medium">₹${serviceFee.toFixed(2)}</span>
+        </div>
+        <hr class="my-3">
+        <div class="d-flex justify-content-between align-items-center" style="animation: fadeIn 0.3s ease 0.2s">
+            <span class="h6 mb-0">Total</span>
+            <span class="h5 mb-0">₹${total.toFixed(2)}</span>
+        </div>
+    `;
+    
+    // Add fade out animation before updating content
+    priceDetails.style.opacity = '0';
+    setTimeout(() => {
+        priceDetails.innerHTML = newContent;
+        priceDetails.style.opacity = '1';
+    }, 150);
+}
+
+// Add smooth scroll behavior
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Add intersection observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.card, .icon-box-xl').forEach(el => observer.observe(el));
+</script>
+{% endblock scripts %} 

@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if event else 'Create' }} Event - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">Event Management</span>
+                <h1 class="h3 mb-2">{{ 'Edit' if event else 'Create New' }} Event</h1>
+                <p class="text-muted mb-0">{{ 'Update the details of your event' if event else 'Fill in the details to create your event' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <div class="row g-4">
+                <!-- Basic Information -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Event Name</label>
+                                <input type="text" class="form-control" name="name" value="{{ event.name if event else '' }}" required>
+                                <div class="invalid-feedback">Please enter an event name</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="5" required>{{ event.description if event else '' }}</textarea>
+                                <div class="invalid-feedback">Please provide a description</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Event Type</label>
+                                <select class="form-select" name="event_type" required>
+                                    <option value="">Select event type</option>
+                                    <option value="standup" {{ 'selected' if event and event.event_type == 'standup' else '' }}>Standup Comedy</option>
+                                    <option value="sports" {{ 'selected' if event and event.event_type == 'sports' else '' }}>Sports</option>
+                                    <option value="music" {{ 'selected' if event and event.event_type == 'music' else '' }}>Music & Dance</option>
+                                    <option value="theatre" {{ 'selected' if event and event.event_type == 'theatre' else '' }}>Theatre</option>
+                                    <option value="workshop" {{ 'selected' if event and event.event_type == 'workshop' else '' }}>Workshop</option>
+                                    <option value="conference" {{ 'selected' if event and event.event_type == 'conference' else '' }}>Conference</option>
+                                    <option value="exhibition" {{ 'selected' if event and event.event_type == 'exhibition' else '' }}>Exhibition</option>
+                                    <option value="other" {{ 'selected' if event and event.event_type == 'other' else '' }}>Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an event type</div>
+                                <div class="form-text">Choose the category that best describes your event</div>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="datetime-local" class="form-control" name="start_date" 
+                                           value="{{ event.start_date.strftime('%Y-%m-%dT%H:%M') if event and event.start_date else '' }}" required>
+                                    <div class="invalid-feedback">Please select a start date</div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">End Date</label>
+                                    <input type="datetime-local" class="form-control" name="end_date"
+                                           value="{{ event.end_date.strftime('%Y-%m-%dT%H:%M') if event and event.end_date else '' }}" required>
+                                    <div class="invalid-feedback">Please select an end date</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Location</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Venue Name</label>
+                                <input type="text" class="form-control" name="venue" value="{{ event.venue if event else '' }}" required>
+                                <div class="invalid-feedback">Please enter a venue name</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" name="address" rows="3" required>{{ event.address if event else '' }}</textarea>
+                                <div class="invalid-feedback">Please provide an address</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" name="city" value="{{ event.city if event else '' }}" required>
+                                <div class="invalid-feedback">Please enter a city</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tickets -->
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Ticket Tiers</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addTicketTier()">
+                                <i class="bi bi-plus-circle me-2"></i>Add Tier
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Total Event Capacity</label>
+                                <input type="number" class="form-control" name="total_seats" value="{{ event.total_seats if event else '' }}" min="1" required>
+                                <div class="form-text">Maximum number of attendees for this event</div>
+                            </div>
+                            <div id="ticket-tiers">
+                                {% if event and event.price_tiers %}
+                                {% for tier in event.price_tiers %}
+                                <div class="ticket-tier mb-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Tier Name</label>
+                                            <input type="text" class="form-control" name="tier_names[]" value="{{ tier.name }}" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Price</label>
+                                            <input type="number" class="form-control" name="tier_prices[]" value="{{ tier.price }}" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" name="tier_quantities[]" value="{{ tier.quantity }}" min="1" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger w-100" onclick="removeTicketTier(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="ticket-tier mb-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Tier Name</label>
+                                            <input type="text" class="form-control" name="tier_names[]" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Price</label>
+                                            <input type="number" class="form-control" name="tier_prices[]" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" name="tier_quantities[]" min="1" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger w-100" onclick="removeTicketTier(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Media -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Media</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Featured Image</label>
+                                <input type="file" class="form-control" name="featured_image" accept="image/*"
+                                       {{ 'required' if not event else '' }}>
+                                {% if event and event.featured_image %}
+                                <div class="mt-2">
+                                    <img src="{{ event.featured_image }}" class="img-thumbnail" alt="Featured Image">
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Gallery Images</label>
+                                <input type="file" class="form-control" name="gallery_images[]" accept="image/*" multiple>
+                                {% if event and event.gallery_images %}
+                                <div class="row g-2 mt-2">
+                                    {% for image in event.gallery_images %}
+                                    <div class="col-4">
+                                        <img src="{{ image }}" class="img-thumbnail" alt="Gallery Image">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" name="status">
+                                    <option value="draft" {{ 'selected' if not event or event.status == 'draft' else '' }}>Draft</option>
+                                    <option value="published" {{ 'selected' if event and event.status == 'published' else '' }}>Published</option>
+                                    <option value="private" {{ 'selected' if event and event.status == 'private' else '' }}>Private</option>
+                                </select>
+                                <div class="form-text">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Draft: Only visible to you<br>
+                                        Published: Visible to everyone<br>
+                                        Private: Visible with direct link
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Event Settings</label>
+                                <div class="list-group">
+                                    <div class="list-group-item border-0 px-0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured"
+                                                   {{ 'checked' if event and event.is_featured else '' }}>
+                                            <label class="form-check-label" for="is_featured">
+                                                Feature this event
+                                                <div class="form-text small">Show in featured section on homepage</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item border-0 px-0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="allow_refunds" id="allow_refunds"
+                                                   {{ 'checked' if not event or event.allow_refunds else '' }}>
+                                            <label class="form-check-label" for="allow_refunds">
+                                                Allow refunds
+                                                <div class="form-text small">Enable ticket refunds up to 24h before event</div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="list-group-item border-0 px-0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="show_remaining_tickets" id="show_remaining_tickets"
+                                                   {{ 'checked' if not event or event.show_remaining_tickets else '' }}>
+                                            <label class="form-check-label" for="show_remaining_tickets">
+                                                Show remaining tickets
+                                                <div class="form-text small">Display number of tickets left</div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="list-group-item border-0 px-0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="enable_waitlist" id="enable_waitlist"
+                                                   {{ 'checked' if event and event.enable_waitlist else '' }}>
+                                            <label class="form-check-label" for="enable_waitlist">
+                                                Enable waitlist
+                                                <div class="form-text small">Allow users to join waitlist when sold out</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Booking Deadline</label>
+                                <select class="form-select" name="booking_deadline">
+                                    <option value="0" {{ 'selected' if event and event.booking_deadline == 0 else '' }}>Until event starts</option>
+                                    <option value="1" {{ 'selected' if event and event.booking_deadline == 1 else '' }}>1 hour before</option>
+                                    <option value="2" {{ 'selected' if event and event.booking_deadline == 2 else '' }}>2 hours before</option>
+                                    <option value="6" {{ 'selected' if event and event.booking_deadline == 6 else '' }}>6 hours before</option>
+                                    <option value="12" {{ 'selected' if event and event.booking_deadline == 12 else '' }}>12 hours before</option>
+                                    <option value="24" {{ 'selected' if event and event.booking_deadline == 24 else '' }}>24 hours before</option>
+                                </select>
+                                <div class="form-text">When to stop accepting bookings</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Ticket Limit Per User</label>
+                                <select class="form-select" name="ticket_limit">
+                                    <option value="0" {{ 'selected' if event and event.ticket_limit == 0 else '' }}>No limit</option>
+                                    <option value="2" {{ 'selected' if event and event.ticket_limit == 2 else '' }}>2 tickets</option>
+                                    <option value="4" {{ 'selected' if event and event.ticket_limit == 4 else '' }}>4 tickets</option>
+                                    <option value="6" {{ 'selected' if event and event.ticket_limit == 6 else '' }}>6 tickets</option>
+                                    <option value="8" {{ 'selected' if event and event.ticket_limit == 8 else '' }}>8 tickets</option>
+                                    <option value="10" {{ 'selected' if event and event.ticket_limit == 10 else '' }}>10 tickets</option>
+                                </select>
+                                <div class="form-text">Maximum tickets a user can purchase</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ticket Personalization -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Ticket Personalization</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">Required Information</h6>
+                            <div class="list-group mb-4">
+                                {% for field, config in event.ticket_fields.items() if field != 'custom_fields' %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="ticket_fields[{{ field }}][enabled]" 
+                                                   id="field_{{ field }}_enabled"
+                                                   {{ 'checked' if config.enabled }}>
+                                            <label class="form-check-label" for="field_{{ field }}_enabled">
+                                                {{ field|title }}
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="ticket_fields[{{ field }}][required]" 
+                                                   id="field_{{ field }}_required"
+                                                   {{ 'checked' if config.required }}>
+                                            <label class="form-check-label" for="field_{{ field }}_required">
+                                                Required
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <h6 class="mb-3">Custom Fields</h6>
+                            <div id="custom-fields">
+                                {% for field in event.ticket_fields.custom_fields %}
+                                <div class="custom-field-row mb-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="custom_field_names[]" 
+                                                   value="{{ field.name }}" placeholder="Field Name">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select" name="custom_field_types[]">
+                                                <option value="text" {{ 'selected' if field.type == 'text' }}>Text</option>
+                                                <option value="number" {{ 'selected' if field.type == 'number' }}>Number</option>
+                                                <option value="date" {{ 'selected' if field.type == 'date' }}>Date</option>
+                                                <option value="select" {{ 'selected' if field.type == 'select' }}>Select</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="custom_field_required[]" {{ 'checked' if field.required }}>
+                                                <label class="form-check-label">Required</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-outline-danger w-100" 
+                                                    onclick="removeCustomField(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" onclick="addCustomField()">
+                                <i class="bi bi-plus-circle me-2"></i>Add Custom Field
+                            </button>
+
+                            <hr class="my-4">
+
+                            <h6 class="mb-3">Ticket Design</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Ticket Template</label>
+                                <select class="form-select" name="ticket_template">
+                                    <option value="default" {{ 'selected' if event.ticket_template == 'default' }}>Default</option>
+                                    <option value="minimal" {{ 'selected' if event.ticket_template == 'minimal' }}>Minimal</option>
+                                    <option value="fancy" {{ 'selected' if event.ticket_template == 'fancy' }}>Fancy</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ticket Instructions</label>
+                                <textarea class="form-control" name="ticket_instructions" rows="3" 
+                                          placeholder="Special instructions to display on the ticket">{{ event.ticket_instructions }}</textarea>
+                            </div>
+
+                            <div class="list-group">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="show_qr_code" 
+                                               id="show_qr_code" {{ 'checked' if event.show_qr_code }}>
+                                        <label class="form-check-label" for="show_qr_code">
+                                            Show QR Code
+                                            <div class="form-text small">Enable QR code scanning for check-in</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="show_barcode" 
+                                               id="show_barcode" {{ 'checked' if event.show_barcode }}>
+                                        <label class="form-check-label" for="show_barcode">
+                                            Show Barcode
+                                            <div class="form-text small">Enable barcode scanning for check-in</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="action" value="publish" class="btn btn-primary">
+                                    <i class="bi bi-globe me-2"></i>Publish Event
+                                </button>
+                                <button type="submit" name="action" value="draft" class="btn btn-outline-secondary">
+                                    <i class="bi bi-save me-2"></i>Save as Draft
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function addTicketTier() {
+    const template = `
+        <div class="ticket-tier mb-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tier Name</label>
+                    <input type="text" class="form-control" name="tier_names[]" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Price</label>
+                    <input type="number" class="form-control" name="tier_prices[]" min="0" step="0.01" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" class="form-control" name="tier_quantities[]" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeTicketTier(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('ticket-tiers').insertAdjacentHTML('beforeend', template);
+}
+
+function removeTicketTier(button) {
+    button.closest('.ticket-tier').remove();
+}
+
+function addCustomField() {
+    const template = `
+        <div class="custom-field-row mb-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="custom_field_names[]" 
+                           placeholder="Field Name" required>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="custom_field_types[]">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="date">Date</option>
+                        <option value="select">Select</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="custom_field_required[]">
+                        <label class="form-check-label">Required</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger w-100" 
+                            onclick="removeCustomField(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('custom-fields').insertAdjacentHTML('beforeend', template);
+}
+
+function removeCustomField(button) {
+    button.closest('.custom-field-row').remove();
+}
+
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

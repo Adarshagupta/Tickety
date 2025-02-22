@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Search Trains - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary-subtle text-primary mb-2">Indian Railways</span>
+                <h1 class="h3 mb-0">Search Trains</h1>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="card glass-effect">
+            <div class="card-body p-4">
+                <form action="{{ url_for('trains') }}" method="GET" class="train-search-form">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">From Station</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-geo-alt"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0 station-search" 
+                                       name="source" placeholder="Enter source station" 
+                                       value="{{ source if source }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">To Station</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0 station-search" 
+                                       name="destination" placeholder="Enter destination station" 
+                                       value="{{ destination if destination }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Journey Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-white">
+                                    <i class="bi bi-calendar3"></i>
+                                </span>
+                                <input type="date" class="form-control border-start-0 ps-0" 
+                                       name="date" min="{{ today }}" value="{{ date if date }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if popular_stations %}
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="gradient-text mb-4">Popular Stations</h5>
+                <div class="row g-3">
+                    {% for station in popular_stations %}
+                    <div class="col-md-3">
+                        <div class="station-card p-3 rounded" style="background: var(--hover-color);">
+                            <div class="d-flex align-items-center">
+                                <div class="station-icon me-3">
+                                    <i class="bi bi-train-front gradient-text"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ station.name }}</h6>
+                                    <div class="d-flex align-items-center text-muted small">
+                                        <span class="badge bg-light me-2">{{ station.code }}</span>
+                                        <span>{{ station.state }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if trains %}
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="gradient-text mb-0">Available Trains</h5>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Sort by
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item active" href="#">Departure Time</a></li>
+                    <li><a class="dropdown-item" href="#">Duration</a></li>
+                    <li><a class="dropdown-item" href="#">Price</a></li>
+                </ul>
+            </div>
+        </div>
+
+        {% for train in trains %}
+        <div class="card mb-3 train-card">
+            <div class="card-body p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="train-icon me-3">
+                                <i class="bi bi-train-front display-6 gradient-text"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-1">{{ train.name }}</h5>
+                                <span class="badge bg-light text-dark">{{ train.number }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-center">
+                                <div class="h5 mb-0">{{ train.src_departure_time }}</div>
+                                <small class="text-muted">{{ train.from_station.name }}</small>
+                            </div>
+                            <div class="train-journey-line mx-3">
+                                <small class="text-muted">{{ train.duration }}</small>
+                                <div class="line"></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="h5 mb-0">{{ train.dest_arrival_time }}</div>
+                                <small class="text-muted">{{ train.to_station.name }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-success-subtle text-success">
+                                <i class="bi bi-check-circle me-1"></i>Available
+                            </span>
+                        </div>
+                        <a href="{{ url_for('train_detail', train_number=train.number) }}?date={{ date }}" 
+                           class="btn btn-primary">
+                            <i class="bi bi-ticket-perforated me-2"></i>Check Availability
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.station-icon i {
+    font-size: 1.5rem;
+}
+
+.train-journey-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.train-journey-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+    margin-top: 0.5rem;
+}
+
+.train-journey-line .line::before,
+.train-journey-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.train-journey-line .line::before {
+    left: 0;
+}
+
+.train-journey-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.train-card {
+    transition: all 0.3s ease;
+}
+
+.train-card:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 991.98px) {
+    .train-journey-line {
+        margin: 1rem 0;
+    }
+
+    .col-md-3.text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+
+    .train-card .btn {
+        width: 100%;
+    }
+}
+
+.station-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background: var(--hover-color);
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.station-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.input-group {
+    position: relative;
+}
+
+@media (max-width: 991.98px) {
+    .station-suggestions {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        max-height: 75vh;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+        border: none;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .station-suggestions.active {
+        transform: translateY(0);
+    }
+
+    .suggestions-close {
+        position: sticky;
+        top: 0;
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        z-index: 1;
+    }
+
+    .suggestion-item {
+        padding: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stationInputs = document.querySelectorAll('.station-search');
+    
+    stationInputs.forEach(input => {
+        // Create suggestions container
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.className = 'station-suggestions';
+        input.parentNode.appendChild(suggestionsContainer);
+        
+        input.addEventListener('input', async function() {
+            const query = this.value;
+            if (query.length < 2) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.remove('active');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/stations/search?q=${encodeURIComponent(query)}`);
+                const stations = await response.json();
+                
+                // Show suggestions
+                showStationSuggestions(this, stations, suggestionsContainer);
+                
+                // Add active class for mobile view
+                if (window.innerWidth < 992 && stations.length > 0) {
+                    suggestionsContainer.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            } catch (error) {
+                console.error('Error fetching stations:', error);
+            }
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Add close button for mobile view
+        if (window.innerWidth < 992) {
+            const closeButton = document.createElement('div');
+            closeButton.className = 'suggestions-close';
+            closeButton.innerHTML = `
+                <button type="button" class="btn btn-link text-muted p-3 w-100 text-start">
+                    <i class="bi bi-chevron-down me-2"></i>Close
+                </button>
+            `;
+            closeButton.addEventListener('click', () => {
+                suggestionsContainer.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            suggestionsContainer.insertBefore(closeButton, suggestionsContainer.firstChild);
+        }
+    });
+});
+
+function showStationSuggestions(input, stations, container) {
+    container.innerHTML = window.innerWidth < 992 ? `
+        <div class="suggestions-close">
+            <button type="button" class="btn btn-link text-muted p-3 w-100 text-start">
+                <i class="bi bi-chevron-down me-2"></i>Close
+            </button>
+        </div>
+    ` : '';
+    
+    if (stations.length === 0) {
+        container.innerHTML += '<div class="suggestion-item text-muted">No stations found</div>';
+        return;
+    }
+    
+    stations.forEach(station => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-train-front text-primary me-2"></i>
+                <div>
+                    <div class="station-name">${station.name}</div>
+                    <div class="station-info text-muted small">
+                        <span class="badge bg-light me-1">${station.code}</span>
+                        ${station.state}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => {
+            input.value = station.code;
+            container.innerHTML = '';
+            container.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        container.appendChild(item);
+    });
+}
+</script>
+{% endblock %} 

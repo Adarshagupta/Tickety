@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}{{ flight.airline.name }} {{ flight.flight_number }} - Tickety{% endblock %}
+
+{% block header %}
+<div class="page-header position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); z-index: -1;"></div>
+    <div class="container position-relative">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('flights') }}" class="text-decoration-none">
+                        <i class="bi bi-airplane"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ flight.airline.name }} {{ flight.flight_number }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary mb-2">{{ flight.cabin_class }}</span>
+                        <h1 class="h3 mb-1">{{ flight.airline.name }}</h1>
+                        <div class="d-flex align-items-center text-muted">
+                            <span class="badge bg-light text-dark me-2">{{ flight.flight_number }}</span>
+                            <span>{{ flight.origin.time|format_date }}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-icon btn-outline-primary" title="Share">
+                        <i class="bi bi-share"></i>
+                    </button>
+                </div>
+
+                <div class="flight-journey mb-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="text-center">
+                            <div class="h4 mb-1">{{ flight.origin.time|format_time }}</div>
+                            <h6 class="mb-1">{{ flight.origin.code }}</h6>
+                            {% if flight.origin.terminal %}
+                            <div class="badge bg-light text-dark">Terminal {{ flight.origin.terminal }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="flight-duration-line mx-4">
+                            <div class="d-flex justify-content-between text-muted small mb-2">
+                                <span>{{ flight.duration }}</span>
+                                <span>Non-stop</span>
+                            </div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h4 mb-1">{{ flight.destination.time|format_time }}</div>
+                            <h6 class="mb-1">{{ flight.destination.code }}</h6>
+                            {% if flight.destination.terminal %}
+                            <div class="badge bg-light text-dark">Terminal {{ flight.destination.terminal }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass-effect mb-4">
+                    <div class="card-body">
+                        <h5 class="gradient-text mb-3">Flight Information</h5>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-airplane text-primary me-2"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Aircraft</small>
+                                        <span>{{ flight.aircraft_type }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-briefcase text-primary me-2"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Baggage</small>
+                                        <span>{{ flight.baggage_allowance.quantity }}x{{ flight.baggage_allowance.weight }}{{ flight.baggage_allowance.weightUnit }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cup-hot text-primary me-2"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Meal</small>
+                                        <span>Included</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-wifi text-primary me-2"></i>
+                                    <div>
+                                        <small class="d-block text-muted">WiFi</small>
+                                        <span>Available</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass-effect">
+                    <div class="card-body">
+                        <h5 class="gradient-text mb-4">Fare Rules</h5>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <i class="bi bi-calendar2-x text-primary me-3 fs-4"></i>
+                                    <div>
+                                        <h6>Cancellation</h6>
+                                        <p class="text-muted small mb-0">Free cancellation up to 24 hours before departure</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <i class="bi bi-calendar2-plus text-primary me-3 fs-4"></i>
+                                    <div>
+                                        <h6>Date Change</h6>
+                                        <p class="text-muted small mb-0">Date change allowed with fee</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <i class="bi bi-person-check text-primary me-3 fs-4"></i>
+                                    <div>
+                                        <h6>Name Change</h6>
+                                        <p class="text-muted small mb-0">Name changes not permitted</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <i class="bi bi-shield-check text-primary me-3 fs-4"></i>
+                                    <div>
+                                        <h6>Travel Insurance</h6>
+                                        <p class="text-muted small mb-0">Optional travel insurance available</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card booking-card">
+            <div class="card-body p-4">
+                <h5 class="gradient-text mb-4">Book Flight</h5>
+                
+                {% if current_user.is_authenticated %}
+                    {% if flight.available_seats > 0 %}
+                    <form method="POST" action="{{ url_for('book_flight', flight_id=flight.id) }}" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label class="form-label small">Number of Passengers</label>
+                            <select name="num_passengers" class="form-select" required>
+                                {% for i in range(1, min(flight.available_seats + 1, 10)) %}
+                                <option value="{{ i }}">{{ i }} passenger{% if i > 1 %}s{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small">Cabin Class</label>
+                            <select name="cabin_class" class="form-select" required>
+                                {% for class in flight.cabin_classes %}
+                                <option value="{{ class.code }}">{{ class.name }} - {{ flight.price.currency }} {{ "%.2f"|format(class.price) }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="price-details mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Base Fare</span>
+                                <span>{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Taxes & Fees</span>
+                                <span>{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount * 0.18) }}</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total</span>
+                                <span>{{ flight.price.currency }} {{ "%.2f"|format(flight.price.amount * 1.18) }}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-ticket-perforated me-2"></i>Continue Booking
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-x-circle display-4 text-danger mb-3"></i>
+                        <h5>Sold Out</h5>
+                        <p class="text-muted small mb-0">Sorry, this flight is fully booked.</p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-box-arrow-in-right display-4 text-primary mb-3"></i>
+                    <h5>Login Required</h5>
+                    <p class="text-muted small mb-4">Please login to book this flight.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.flight-duration-line {
+    position: relative;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.flight-duration-line .line {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    position: relative;
+}
+
+.flight-duration-line .line::before,
+.flight-duration-line .line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.flight-duration-line .line::before {
+    left: 0;
+}
+
+.flight-duration-line .line::after {
+    right: 0;
+    background: var(--secondary-color);
+}
+
+.booking-card {
+    position: sticky;
+    top: 1rem;
+}
+
+.price-details {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+    .booking-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        margin: 0;
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .booking-card .card-body {
+        padding: 1rem;
+    }
+
+    .booking-card h5 {
+        font-size: 1.125rem;
+    }
+
+    body {
+        padding-bottom: 400px;
+    }
+
+    .mobile-nav {
+        display: none;
+    }
+}
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Update price when changing passengers or cabin class
+document.querySelectorAll('select[name="num_passengers"], select[name="cabin_class"]').forEach(select => {
+    select.addEventListener('change', updatePrice)
+})
+
+function updatePrice() {
+    const numPassengers = parseInt(document.querySelector('select[name="num_passengers"]').value)
+    const cabinClass = document.querySelector('select[name="cabin_class"]')
+    const selectedOption = cabinClass.options[cabinClass.selectedIndex]
+    const basePrice = parseFloat(selectedOption.textContent.match(/[\d.]+$/)[0])
+    
+    const baseFare = basePrice * numPassengers
+    const taxes = baseFare * 0.18
+    const total = baseFare + taxes
+    
+    document.querySelector('.price-details').innerHTML = `
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Base Fare (${numPassengers} × {{ flight.price.currency }} ${basePrice.toFixed(2)})</span>
+            <span>{{ flight.price.currency }} ${baseFare.toFixed(2)}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Taxes & Fees</span>
+            <span>{{ flight.price.currency }} ${taxes.toFixed(2)}</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold">
+            <span>Total</span>
+            <span>{{ flight.price.currency }} ${total.toFixed(2)}</span>
+        </div>
+    `
+}
+</script>
+{% endblock %} 
