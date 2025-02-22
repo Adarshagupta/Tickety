@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}My Wallet - Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Wallet Balance Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title gradient-text">Wallet Balance</h5>
+                    <h2 class="display-5 mb-4">₹{{ "%.2f"|format(wallet.balance) }}</h2>
+                    <a href="{{ url_for('add_money') }}" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle me-2"></i>Add Money
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title gradient-text">Quick Stats</h5>
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted mb-1">Total Added</h6>
+                                <h4 class="mb-0">₹{{ "%.2f"|format(transactions|selectattr('amount', 'gt', 0)|sum(attribute='amount')) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted mb-1">Total Spent</h6>
+                                <h4 class="mb-0">₹{{ "%.2f"|format(transactions|selectattr('amount', 'lt', 0)|sum(attribute='amount')|abs) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Transactions</h5>
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#transactionsCollapse">
+                <i class="bi bi-filter"></i> Filter
+            </button>
+        </div>
+        
+        <!-- Filter Options -->
+        <div class="collapse" id="transactionsCollapse">
+            <div class="card-body border-bottom">
+                <form class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Transaction Type</label>
+                        <select class="form-select">
+                            <option value="">All</option>
+                            <option value="deposit">Deposits</option>
+                            <option value="payment">Payments</option>
+                            <option value="refund">Refunds</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date Range</label>
+                        <select class="form-select">
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                            <option value="all">All time</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span>{{ transaction.created_at.strftime('%d %b %Y') }}</span>
+                                <small class="text-muted">{{ transaction.created_at.strftime('%I:%M %p') }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span>{{ transaction.description }}</span>
+                                {% if transaction.reference_id %}
+                                <small class="text-muted">Ref: {{ transaction.reference_id }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if transaction.type == 'deposit' %}
+                            <span class="badge bg-success-subtle text-success">
+                                <i class="bi bi-plus-circle me-1"></i>Deposit
+                            </span>
+                            {% elif transaction.type == 'payment' %}
+                            <span class="badge bg-primary-subtle text-primary">
+                                <i class="bi bi-cart me-1"></i>Payment
+                            </span>
+                            {% elif transaction.type == 'refund' %}
+                            <span class="badge bg-info-subtle text-info">
+                                <i class="bi bi-arrow-return-left me-1"></i>Refund
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="{{ 'text-success' if transaction.amount > 0 else 'text-danger' }}">
+                                {{ '+' if transaction.amount > 0 else '' }}₹{{ "%.2f"|format(transaction.amount) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if transaction.status == 'completed' %}
+                            <span class="badge bg-success-subtle text-success">Completed</span>
+                            {% elif transaction.status == 'pending' %}
+                            <span class="badge bg-warning-subtle text-warning">Pending</span>
+                            {% elif transaction.status == 'failed' %}
+                            <span class="badge bg-danger-subtle text-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                                <p class="mb-0">No transactions found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -113,11 +113,11 @@
                                     <div class="card-body p-3">
                                         <div class="d-flex align-items-center">
                                             <div class="icon-box-lg bg-primary-subtle text-primary rounded-3 me-3">
-                                                <i class="bi bi-currency-dollar"></i>
+                                                <i class="bi bi-currency-rupee"></i>
                                             </div>
                                             <div>
                                                 <small class="text-muted d-block">Starting from</small>
-                                                <strong>${{ "%.2f"|format(event.price_tiers|min_price) }}</strong>
+                                                <strong>₹{{ "%.2f"|format(event.price_tiers|min_price) }}</strong>
                                                 <small class="d-block">per ticket</small>
                                             </div>
                                         </div>
@@ -209,13 +209,13 @@
                                     <span class="fw-medium">₹{{ "%.2f"|format(event.price_tiers[0].price) if event.price_tiers else "0.00" }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-3">
-                                    <span class="text-muted">Service fee</span>
-                                    <span class="fw-medium">₹{{ "%.2f"|format(event.price_tiers[0].price * 0.1) if event.price_tiers else "0.00" }}</span>
+                                    <span class="text-muted">GST (18%)</span>
+                                    <span class="fw-medium">₹{{ "%.2f"|format(event.price_tiers[0].price * 0.18) if event.price_tiers else "0.00" }}</span>
                                 </div>
                                 <hr class="my-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="h6 mb-0">Total</span>
-                                    <span class="h5 mb-0">₹{{ "%.2f"|format(event.price_tiers[0].price * 1.1) if event.price_tiers else "0.00" }}</span>
+                                    <span class="h5 mb-0">₹{{ "%.2f"|format(event.price_tiers[0].price * 1.18) if event.price_tiers else "0.00" }}</span>
                                 </div>
                             </div>
 
@@ -685,4 +685,6 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.card, .icon-box-xl').forEach(el => observer.observe(el));
 </script>
-{% endblock scripts %} 
+{% endblock scripts %}
+
+{% endblock content %} 

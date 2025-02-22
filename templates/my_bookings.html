@@ -68,6 +68,11 @@
                                 <td class="pe-4">
                                     <span class="badge bg-success-subtle text-success">Confirmed</span>
                                 </td>
+                                <td class="pe-4">
+                                    <a href="{{ url_for('view_ticket', booking_id=booking.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-ticket-detailed me-2"></i>View Ticket
+                                    </a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -95,7 +100,7 @@
                                 <span class="small">{{ booking.num_tickets }} ticket{% if booking.num_tickets > 1 %}s{% endif %}</span>
                             </div>
                             <div class="icon-box">
-                                <i class="bi bi-currency-dollar"></i>
+                                <i class="bi bi-currency-rupee"></i>
                                 <span class="small">₹{{ "%.2f"|format(booking.total_price) }}</span>
                             </div>
                         </div>

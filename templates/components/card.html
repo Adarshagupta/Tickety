@@ -1,0 +1,171 @@
+{% macro card(title=None, subtitle=None, footer=None, classes='') %}
+<div class="card hover-lift {{ classes }}">
+    {% if title %}
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 gradient-text">{{ title }}</h5>
+                {% if subtitle %}
+                    <small class="text-muted">{{ subtitle }}</small>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="card-body">
+        {{ caller() }}
+    </div>
+    
+    {% if footer %}
+        <div class="card-footer bg-transparent border-top">
+            {{ footer }}
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro stat_card(icon, title, value, subtitle=None, trend=None, trend_value=None) %}
+<div class="card stat-card hover-lift">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon">
+                <i class="{{ icon }}"></i>
+            </div>
+            <div class="ms-3">
+                <h6 class="text-muted mb-0">{{ title }}</h6>
+                <h3 class="gradient-text mb-0">{{ value }}</h3>
+            </div>
+        </div>
+        {% if subtitle or trend %}
+            <div class="d-flex align-items-center justify-content-between">
+                {% if subtitle %}
+                    <small class="text-muted">{{ subtitle }}</small>
+                {% endif %}
+                {% if trend %}
+                    <div class="trend-badge {{ 'up' if trend == 'up' else 'down' }}">
+                        <i class="fas fa-{{ 'arrow-up' if trend == 'up' else 'arrow-down' }} me-1"></i>
+                        {{ trend_value }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro action_card(title, description=None, action_text=None, action_url=None, icon=None, classes='') %}
+<div class="card action-card hover-lift {{ classes }}">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            {% if icon %}
+                <div class="action-icon">
+                    <i class="{{ icon }}"></i>
+                </div>
+            {% endif %}
+            <div class="ms-3">
+                <h5 class="card-title mb-1">{{ title }}</h5>
+                {% if description %}
+                    <p class="card-text text-muted mb-0">{{ description }}</p>
+                {% endif %}
+            </div>
+            {% if action_url %}
+                <a href="{{ action_url }}" class="ms-auto btn btn-primary btn-sm">
+                    {{ action_text if action_text else 'View' }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<style>
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-footer {
+    padding: 1rem 1.25rem;
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+}
+
+.stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-gradient);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.trend-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.trend-badge.up {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.trend-badge.down {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.action-card {
+    cursor: pointer;
+}
+
+.action-card .action-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--hover-color);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    transition: var(--transition);
+}
+
+.action-card:hover .action-icon {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.action-card .btn {
+    opacity: 0;
+    transform: translateX(10px);
+    transition: var(--transition);
+}
+
+.action-card:hover .btn {
+    opacity: 1;
+    transform: translateX(0);
+}
+</style> 

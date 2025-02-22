@@ -3,152 +3,379 @@
 {% block title %}Event Ticket - {{ booking.event.name }}{% endblock title %}
 
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Event Ticket - {{ booking.event.name }}</title>
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #fff;
-        }
-        .ticket {
-            width: 800px;
-            margin: 20px auto;
-            border: 2px solid #000;
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-            background: linear-gradient(135deg, #fff, #f8f9fa);
-        }
-        .ticket-header {
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .ticket-body {
-            padding: 20px;
-            display: flex;
-            gap: 20px;
-        }
-        .ticket-info {
-            flex: 1;
-        }
-        .ticket-codes {
-            width: 200px;
-            text-align: center;
-        }
-        .info-group {
-            margin-bottom: 15px;
-        }
-        .info-label {
-            font-size: 12px;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-        .info-value {
-            font-size: 16px;
-            color: #000;
-        }
-        .ticket-number {
-            font-family: monospace;
-            font-size: 20px;
-            margin-top: 10px;
-        }
-        .qr-code img, .barcode img {
-            max-width: 100%;
-            height: auto;
-        }
-        .ticket-footer {
-            padding: 20px;
-            background: #f8f9fa;
-            font-size: 12px;
-            color: #6c757d;
-            text-align: center;
-            border-top: 1px dashed #dee2e6;
-        }
-        .event-logo {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin: 0 auto 10px;
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div class="ticket">
-        <div class="ticket-header">
-            {% if booking.event.featured_image %}
-            <img src="{{ booking.event.get_featured_image_url() }}" alt="Event Logo" class="event-logo">
-            {% endif %}
-            <h1>{{ booking.event.name }}</h1>
-            <p>{{ booking.event.start_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
-        </div>
-        
-        <div class="ticket-body">
-            <div class="ticket-info">
-                <!-- Attendee Information -->
-                {% for field, value in booking.attendee_details.items() %}
-                <div class="info-group">
-                    <div class="info-label">{{ field|title }}</div>
-                    <div class="info-value">{{ value }}</div>
-                </div>
-                {% endfor %}
-                
-                <!-- Event Information -->
-                <div class="info-group">
-                    <div class="info-label">Venue</div>
-                    <div class="info-value">{{ booking.event.venue }}</div>
-                </div>
-                <div class="info-group">
-                    <div class="info-label">Ticket Type</div>
-                    <div class="info-value">{{ booking.tier_name }}</div>
-                </div>
-                
-                {% if booking.event.ticket_instructions %}
-                <div class="info-group">
-                    <div class="info-label">Important Instructions</div>
-                    <div class="info-value">{{ booking.event.ticket_instructions }}</div>
-                </div>
-                {% endif %}
-            </div>
-            
-            <div class="ticket-codes">
-                {% if booking.event.show_qr_code %}
-                <div class="qr-code">
-                    <img src="{{ booking.qr_code }}" alt="QR Code">
-                </div>
-                {% endif %}
-                
-                {% if booking.event.show_barcode %}
-                <div class="barcode">
-                    <img src="{{ booking.barcode }}" alt="Barcode">
-                </div>
-                {% endif %}
-                
-                <div class="ticket-number">
-                    {{ booking.ticket_code }}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Action Buttons (hidden in print) -->
+            <div class="d-print-none mb-4">
+                <div class="d-flex gap-3">
+                    <button onclick="window.print()" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-printer me-2"></i>Print Ticket
+                    </button>
+                    <button onclick="downloadPDF()" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-download me-2"></i>Download PDF
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-share me-2"></i>Share
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="shareWhatsApp()"><i class="bi bi-whatsapp me-2"></i>WhatsApp</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="shareEmail()"><i class="bi bi-envelope me-2"></i>Email</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="shareText()"><i class="bi bi-clipboard me-2"></i>Copy Link</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="ticket-footer">
-            <p>This ticket is valid for one-time entry only. Non-transferable.</p>
-            {% if booking.event.allow_refunds %}
-            <p>Refunds available up to 24 hours before the event.</p>
-            {% endif %}
+
+            <!-- Printable Ticket -->
+            <div class="ticket">
+                <div class="ticket-header">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="brand">
+                            <h4 class="gradient-text mb-0">TicketHub</h4>
+                            <small class="text-muted">Your Trusted Booking Partner</small>
+                        </div>
+                        {% if booking.event.featured_image %}
+                        <img src="{{ booking.event.get_featured_image_url() }}" alt="Event Logo" class="event-logo">
+                        {% endif %}
+                    </div>
+                    <h2 class="event-title">{{ booking.event.name }}</h2>
+                    <div class="event-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>{{ booking.event.start_date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>{{ booking.event.venue }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ticket-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Attendee Details -->
+                            <div class="ticket-section">
+                                <h6 class="section-title">Attendee Details</h6>
+                                <div class="row g-3">
+                                    {% if booking.event.ticket_fields.name.enabled %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">Name</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.name }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.email.enabled %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">Email</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.email }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.phone.enabled %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">Phone</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.phone }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.age.enabled %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">Age</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.age }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.gender.enabled %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">Gender</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.gender|title }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.id_proof.enabled %}
+                                    <div class="col-12">
+                                        <label class="small text-muted d-block">ID Proof</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.id_proof.type|upper }} - {{ booking.attendee_details.id_proof.number }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.event.ticket_fields.address.enabled %}
+                                    <div class="col-12">
+                                        <label class="small text-muted d-block">Address</label>
+                                        <span class="fw-medium">{{ booking.attendee_details.address }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if booking.attendee_details.custom_fields %}
+                                    {% for field_name, value in booking.attendee_details.custom_fields.items() %}
+                                    <div class="col-md-6">
+                                        <label class="small text-muted d-block">{{ field_name|title }}</label>
+                                        <span class="fw-medium">{{ value }}</span>
+                                    </div>
+                                    {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Ticket Information -->
+                            <div class="ticket-section mt-4">
+                                <h6 class="section-title">Ticket Information</h6>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <label class="small text-muted d-block">Ticket Type</label>
+                                        <span class="fw-medium">{{ booking.ticket_tier.name if booking.ticket_tier else 'Standard' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="small text-muted d-block">Ticket Number</label>
+                                        <span class="fw-medium font-monospace">{{ booking.ticket_code }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- QR Code -->
+                            {% if booking.event.show_qr_code and booking.qr_code %}
+                            <div class="qr-code-container text-center">
+                                <img src="{{ booking.qr_code }}" alt="QR Code" class="img-fluid">
+                                <div class="small text-muted mt-2">Scan for verification</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if booking.event.show_barcode and booking.barcode %}
+                            <div class="barcode-container text-center mt-3">
+                                <img src="{{ booking.barcode }}" alt="Barcode" class="img-fluid">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ticket-footer">
+                    {% if booking.event.ticket_instructions %}
+                    <div class="instructions">
+                        <h6 class="section-title">Important Instructions</h6>
+                        <p class="mb-0">{{ booking.event.ticket_instructions }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="terms mt-3">
+                        <small class="text-muted">
+                            This ticket is valid for one-time entry only. Non-transferable.
+                            {% if booking.event.allow_refunds %}
+                            Refunds available up to 24 hours before the event.
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<style>
+/* General Styles */
+.ticket {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.ticket-header {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    padding: 2rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.event-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 1rem;
+}
+
+.event-title {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.event-meta {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.ticket-body {
+    padding: 2rem;
+}
+
+.ticket-section:not(:last-child) {
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.qr-code-container img,
+.barcode-container img {
+    max-width: 100%;
+    height: auto;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+}
+
+.ticket-footer {
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));
+    border-top: 1px dashed var(--border-color);
+}
+
+/* Print Styles */
+@media print {
+    /* Hide everything except the ticket */
+    body * {
+        visibility: hidden;
+    }
+    
+    .ticket, .ticket * {
+        visibility: visible;
+    }
+    
+    .ticket {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm; /* A4 width */
+        height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none !important;
+        border: 1px solid #000;
+    }
+    
+    /* Hide action buttons */
+    .d-print-none {
+        display: none !important;
+    }
+    
+    /* Reset container/row/col classes for print */
+    .container, .row, .col-lg-8 {
+        width: 100% !important;
+        max-width: none !important;
+        flex: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure proper page breaks */
+    .ticket {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Remove background gradients */
+    .ticket-header {
+        background: none !important;
+        border-bottom: 1px dashed #000;
+        padding: 2cm 1.5cm !important;
+    }
+    
+    .ticket-body {
+        padding: 1.5cm !important;
+    }
+    
+    .ticket-footer {
+        background: none !important;
+        border-top: 1px dashed #000;
+        padding: 1.5cm !important;
+    }
+    
+    /* Ensure text is black for better printing */
+    .gradient-text {
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+        color: #000 !important;
+    }
+    
+    .text-muted {
+        color: #666 !important;
+    }
+    
+    /* Ensure QR code and barcode are clear */
+    .qr-code-container img,
+    .barcode-container img {
+        border: 1px solid #000;
+        padding: 0.5cm;
+        max-width: 150px !important;
+    }
+    
+    /* Adjust font sizes for print */
+    .event-title {
+        font-size: 24pt !important;
+        margin-bottom: 12pt !important;
+    }
+    
+    .section-title {
+        font-size: 12pt !important;
+        margin-bottom: 8pt !important;
+    }
+    
+    /* Ensure proper column layout in print */
+    .row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .col-md-8 {
+        width: 66.666667% !important;
+    }
+    
+    .col-md-4 {
+        width: 33.333333% !important;
+    }
+}
+</style>
+
+<script>
+// Download PDF function
+function downloadPDF() {
+    window.print();
+}
+
+// Share functions
+function shareWhatsApp() {
+    const text = `Check out my ticket for ${encodeURIComponent("{{ booking.event.name }}")}!`;
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://wa.me/?text=${text}%20${url}`);
+}
+
+function shareEmail() {
+    const subject = encodeURIComponent(`Ticket for {{ booking.event.name }}`);
+    const body = encodeURIComponent(`Check out my ticket for {{ booking.event.name }}!\n\n${window.location.href}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function shareText() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Ticket link copied to clipboard!');
+    });
+}
+</script>
 {% endblock content %} 

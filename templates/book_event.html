@@ -2,6 +2,51 @@
 
 {% block title %}Book Tickets - {{ event.name }}{% endblock %}
 
+{% block styles %}
+<style>
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.form-select {
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+.price-breakdown {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    transform: translateY(-2px);
+}
+
+.event-summary {
+    position: relative;
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 1rem;
+}
+</style>
+{% endblock styles %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -56,18 +101,77 @@
                         <!-- Attendee Details -->
                         <div class="mb-4">
                             <h6 class="mb-3">Attendee Details</h6>
+                            {% if event.ticket_fields.name.enabled %}
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input type="text" name="attendee_name" class="form-control bg-light border-0" required>
+                                <label class="form-label">Name {% if event.ticket_fields.name.required %}*{% endif %}</label>
+                                <input type="text" name="attendee_name" class="form-control bg-light border-0" {% if event.ticket_fields.name.required %}required{% endif %}>
                             </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.email.enabled %}
                             <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="attendee_email" class="form-control bg-light border-0" required>
+                                <label class="form-label">Email {% if event.ticket_fields.email.required %}*{% endif %}</label>
+                                <input type="email" name="attendee_email" class="form-control bg-light border-0" {% if event.ticket_fields.email.required %}required{% endif %}>
                             </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.phone.enabled %}
                             <div class="mb-3">
-                                <label class="form-label">Phone</label>
-                                <input type="tel" name="attendee_phone" class="form-control bg-light border-0">
+                                <label class="form-label">Phone {% if event.ticket_fields.phone.required %}*{% endif %}</label>
+                                <input type="tel" name="attendee_phone" class="form-control bg-light border-0" {% if event.ticket_fields.phone.required %}required{% endif %}>
                             </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.age.enabled %}
+                            <div class="mb-3">
+                                <label class="form-label">Age {% if event.ticket_fields.age.required %}*{% endif %}</label>
+                                <input type="number" name="attendee_age" min="0" max="120" class="form-control bg-light border-0" {% if event.ticket_fields.age.required %}required{% endif %}>
+                            </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.gender.enabled %}
+                            <div class="mb-3">
+                                <label class="form-label">Gender {% if event.ticket_fields.gender.required %}*{% endif %}</label>
+                                <select name="attendee_gender" class="form-select bg-light border-0" {% if event.ticket_fields.gender.required %}required{% endif %}>
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.id_proof.enabled %}
+                            <div class="mb-3">
+                                <label class="form-label">ID Proof {% if event.ticket_fields.id_proof.required %}*{% endif %}</label>
+                                <div class="input-group">
+                                    <select name="attendee_id_type" class="form-select bg-light border-0" {% if event.ticket_fields.id_proof.required %}required{% endif %}>
+                                        <option value="">Select ID Type</option>
+                                        <option value="aadhar">Aadhar Card</option>
+                                        <option value="pan">PAN Card</option>
+                                        <option value="dl">Driving License</option>
+                                        <option value="passport">Passport</option>
+                                    </select>
+                                    <input type="text" name="attendee_id_number" placeholder="ID Number" class="form-control bg-light border-0" {% if event.ticket_fields.id_proof.required %}required{% endif %}>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.address.enabled %}
+                            <div class="mb-3">
+                                <label class="form-label">Address {% if event.ticket_fields.address.required %}*{% endif %}</label>
+                                <textarea name="attendee_address" rows="3" class="form-control bg-light border-0" {% if event.ticket_fields.address.required %}required{% endif %}></textarea>
+                            </div>
+                            {% endif %}
+                            
+                            {% if event.ticket_fields.custom_fields %}
+                            {% for field in event.ticket_fields.custom_fields %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }} {% if field.required %}*{% endif %}</label>
+                                <input type="{{ field.type }}" name="attendee_custom_{{ field.name }}" class="form-control bg-light border-0" {% if field.required %}required{% endif %}>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
                         </div>
 
                         <!-- Price Breakdown -->
@@ -75,7 +179,7 @@
                             <h6 class="mb-3">Price Breakdown</h6>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Price per ticket</span>
-                                <span class="ticket-price">${{ "%.2f"|format(event.price_tiers[0].price) }}</span>
+                                <span class="ticket-price">₹{{ "%.2f"|format(event.price_tiers[0].price) }}</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Number of tickets</span>
@@ -92,7 +196,7 @@
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <strong>Total</strong>
-                                <strong class="total-price">${{ "%.2f"|format(event.price_tiers[0].price * 1.1) }}</strong>
+                                <strong class="total-price">₹{{ "%.2f"|format(event.price_tiers[0].price * 1.18) }}</strong>
                             </div>
                         </div>
 
@@ -126,48 +230,7 @@
     </div>
 </div>
 
-<style>
-.card {
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.form-select {
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.form-select:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
-}
-
-.price-breakdown {
-    background: rgba(99, 102, 241, 0.05);
-    border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5, #9333ea);
-    transform: translateY(-2px);
-}
-
-.event-summary {
-    position: relative;
-    padding: 1rem;
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: 1rem;
-}
-</style>
+{% endblock content %}
 
 {% block scripts %}
 <script>
@@ -203,4 +266,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updatePrices();
 });
 </script>
-{% endblock %} 
+{% endblock scripts %} 

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Add Money to Wallet - Ticket Booking{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Money to Wallet</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="addMoneyForm">
+                        <div class="mb-4">
+                            <label class="form-label">Select Amount</label>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="100">₹100</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="500">₹500</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="1000">₹1000</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="2000">₹2000</button>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" name="amount" id="amount" min="1" step="1" required
+                                    placeholder="Enter amount">
+                            </div>
+                            <div class="form-text">Minimum amount: ₹1</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-wallet2 me-2"></i>Add Money
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Payment Methods Info -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Accepted Payment Methods</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-credit-card text-primary me-2"></i>
+                                <span>Credit Card</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-credit-card text-primary me-2"></i>
+                                <span>Debit Card</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-bank text-primary me-2"></i>
+                                <span>Net Banking</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-wallet2 text-primary me-2"></i>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle amount button clicks
+    document.querySelectorAll('.amount-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.dataset.amount;
+            document.getElementById('amount').value = amount;
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+    
+    // Form validation
+    document.getElementById('addMoneyForm').addEventListener('submit', function(e) {
+        const amount = parseFloat(document.getElementById('amount').value);
+        if (isNaN(amount) || amount < 1) {
+            e.preventDefault();
+            alert('Please enter a valid amount (minimum ₹1)');
+        }
+    });
+});
+</script>
+{% endblock %} 

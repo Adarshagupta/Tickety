@@ -1,0 +1,174 @@
+{% block navbar %}
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand gradient-text hover-lift" href="{{ url_for('index') }}">
+            <i class="fas fa-ticket-alt me-2"></i>
+            TicketHub
+        </a>
+        
+        <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'index' }}" href="{{ url_for('index') }}">
+                        <i class="fas fa-home me-2"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'trains' }}" href="{{ url_for('trains') }}">
+                        <i class="fas fa-train me-2"></i>Trains
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'flights' }}" href="{{ url_for('flights') }}">
+                        <i class="fas fa-plane me-2"></i>Flights
+                    </a>
+                </li>
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'my_bookings' }}" href="{{ url_for('my_bookings') }}">
+                            <i class="fas fa-ticket me-2"></i>My Bookings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'wallet' }}" href="{{ url_for('wallet') }}">
+                            <i class="fas fa-wallet me-2"></i>Wallet
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link hover-lift d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <div class="avatar-circle me-2">
+                                {{ current_user.name[:1].upper() }}
+                            </div>
+                            <span>{{ current_user.name }}</span>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                            {% if current_user.is_host %}
+                                <li>
+                                    <a class="dropdown-item py-2 px-3" href="{{ url_for('host_dashboard') }}">
+                                        <i class="fas fa-chart-line me-2"></i>Host Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3" href="{{ url_for('host_events') }}">
+                                        <i class="fas fa-calendar me-2"></i>My Events
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% else %}
+                                <li>
+                                    <a class="dropdown-item py-2 px-3" href="{{ url_for('become_host') }}">
+                                        <i class="fas fa-star me-2"></i>Become a Host
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item py-2 px-3" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link hover-lift {{ 'active' if request.endpoint == 'login' }}" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-primary hover-lift" href="{{ url_for('register') }}">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.dropdown-menu {
+    border-radius: 1rem;
+    padding: 0.5rem;
+    min-width: 200px;
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    border-radius: 0.5rem;
+    transition: var(--transition);
+}
+
+.dropdown-item:hover {
+    background: var(--hover-color);
+    transform: translateX(4px);
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: var(--border-color);
+}
+
+.navbar-toggler {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.navbar-toggler:hover {
+    background: var(--hover-color);
+}
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: var(--surface-color);
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .nav-item {
+        margin: 0.25rem 0;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+    
+    .dropdown-menu {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin-top: 0;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
+{% endblock %} 

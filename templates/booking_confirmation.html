@@ -59,7 +59,7 @@
                         <h6 class="mb-3">Ticket Information</h6>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Ticket Type</span>
-                            <span>{{ booking.ticket_tier.name }}</span>
+                            <span>{{ booking.ticket_tier.name if booking.ticket_tier else 'Standard' }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Quantity</span>
@@ -67,11 +67,11 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Price per Ticket</span>
-                            <span>₹{{ "%.2f"|format(booking.total_price / booking.num_tickets / 1.1) }}</span>
+                            <span>₹{{ "%.2f"|format(booking.total_price / booking.num_tickets / 1.18) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Service Fee</span>
-                            <span>₹{{ "%.2f"|format(booking.total_price * 0.1) }}</span>
+                            <span class="text-muted">GST (18%)</span>
+                            <span>₹{{ "%.2f"|format(booking.total_price * 0.18) }}</span>
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between">

@@ -422,6 +422,134 @@
                         </div>
                     </div>
                     
+                    <!-- Ticket Fields Configuration -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="mb-0">Ticket Fields</h5>
+                            <p class="text-muted small mb-0">Configure what information to collect from attendees</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Field</th>
+                                            <th>Enabled</th>
+                                            <th>Required</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Name</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[name][enabled]" 
+                                                           {% if event.ticket_fields.name.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[name][required]"
+                                                           {% if event.ticket_fields.name.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Email</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[email][enabled]"
+                                                           {% if event.ticket_fields.email.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[email][required]"
+                                                           {% if event.ticket_fields.email.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Phone</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[phone][enabled]"
+                                                           {% if event.ticket_fields.phone.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[phone][required]"
+                                                           {% if event.ticket_fields.phone.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Age</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[age][enabled]"
+                                                           {% if event.ticket_fields.age.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[age][required]"
+                                                           {% if event.ticket_fields.age.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Gender</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[gender][enabled]"
+                                                           {% if event.ticket_fields.gender.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[gender][required]"
+                                                           {% if event.ticket_fields.gender.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>ID Proof</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[id_proof][enabled]"
+                                                           {% if event.ticket_fields.id_proof.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[id_proof][required]"
+                                                           {% if event.ticket_fields.id_proof.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Address</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[address][enabled]"
+                                                           {% if event.ticket_fields.address.enabled %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" name="ticket_fields[address][required]"
+                                                           {% if event.ticket_fields.address.required %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Action Buttons -->
                     <div class="card mt-4">
                         <div class="card-body">

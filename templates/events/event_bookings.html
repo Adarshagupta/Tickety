@@ -13,7 +13,7 @@
                 <p class="text-muted mb-0">{{ event.start_date.strftime('%B %d, %Y') }} at {{ event.venue }}</p>
             </div>
             <div>
-                <a href="{{ url_for('host_event_edit', event_id=event.id) }}" class="btn btn-light me-2">
+                <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-light me-2">
                     <i class="bi bi-pencil me-2"></i>Edit Event
                 </a>
                 <button class="btn btn-primary" onclick="exportBookings()">
@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="progress" style="height: 4px;">
-                    <div class="progress-bar bg-primary" style="width: {{ (stats.total_tickets / event.capacity * 100) if event.capacity > 0 else 0 }}%"></div>
+                    <div class="progress-bar bg-primary" style="width: {{ (stats.total_tickets / event.total_seats * 100) if event.total_seats > 0 else 0 }}%"></div>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="mb-0">Total Revenue</h6>
-                        <h3 class="mb-0">${{ "%.2f"|format(stats.total_revenue) }}</h3>
+                        <h3 class="mb-0">₹{{ "%.2f"|format(stats.total_revenue) }}</h3>
                     </div>
                 </div>
                 <div class="progress" style="height: 4px;">
@@ -153,32 +153,32 @@
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
                                             <div class="avatar avatar-sm">
-                                                {% if booking.user.avatar %}
+                                                {% if booking.user and booking.user.avatar %}
                                                 <img src="{{ booking.user.avatar }}" class="avatar-img rounded-circle" alt="">
                                                 {% else %}
-                                                <span class="avatar-text rounded-circle">{{ booking.user.name[:2].upper() }}</span>
+                                                <span class="avatar-text rounded-circle">{{ booking.user.name[:2].upper() if booking.user else 'NA' }}</span>
                                                 {% endif %}
                                             </div>
                                         </div>
                                         <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-0">{{ booking.user.name }}</h6>
-                                            <small class="text-muted">{{ booking.user.email }}</small>
+                                            <h6 class="mb-0">{{ booking.user.name if booking.user else 'Unknown User' }}</h6>
+                                            <small class="text-muted">{{ booking.user.email if booking.user else 'No email' }}</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ booking.ticket_tier.name }}</td>
-                                <td>{{ booking.quantity }}</td>
-                                <td>${{ "%.2f"|format(booking.total_amount) }}</td>
+                                <td>{{ booking.ticket_tier.name if booking.ticket_tier else 'Standard' }}</td>
+                                <td>{{ booking.num_tickets }}</td>
+                                <td>₹{{ "%.2f"|format(booking.total_price) }}</td>
                                 <td>
-                                    {% if booking.is_checked_in %}
+                                    {% if booking.check_in_status %}
                                     <span class="badge bg-success-subtle text-success">Checked In</span>
-                                    {% elif booking.is_refunded %}
+                                    {% elif booking.status == 'refunded' %}
                                     <span class="badge bg-danger-subtle text-danger">Refunded</span>
                                     {% else %}
                                     <span class="badge bg-primary-subtle text-primary">Confirmed</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ booking.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                                <td>{{ booking.created_at.strftime('%b %d, %Y %H:%M') if booking.created_at else 'N/A' }}</td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
@@ -188,12 +188,12 @@
                                             <li><a class="dropdown-item" href="#" onclick="viewBookingDetails({{ booking.id }})">
                                                 <i class="bi bi-eye me-2"></i>View Details
                                             </a></li>
-                                            {% if not booking.is_checked_in and not booking.is_refunded %}
+                                            {% if not booking.check_in_status and not booking.status == 'refunded' %}
                                             <li><a class="dropdown-item" href="#" onclick="checkIn({{ booking.id }})">
                                                 <i class="bi bi-check-circle me-2"></i>Check In
                                             </a></li>
                                             {% endif %}
-                                            {% if event.allow_refunds and not booking.is_refunded and not booking.is_checked_in %}
+                                            {% if event.allow_refunds and not booking.status == 'refunded' and not booking.check_in_status %}
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item text-danger" href="#" onclick="processRefund({{ booking.id }})">
                                                 <i class="bi bi-x-circle me-2"></i>Process Refund
@@ -290,15 +290,15 @@ function viewBookingDetails(bookingId) {
                     <h6 class="mb-2">Ticket Information</h6>
                     <p class="mb-1"><strong>Ticket Type:</strong> ${data.ticket_tier.name}</p>
                     <p class="mb-1"><strong>Quantity:</strong> ${data.quantity}</p>
-                    <p class="mb-1"><strong>Price per Ticket:</strong> $${data.ticket_tier.price}</p>
-                    <p class="mb-0"><strong>Total Amount:</strong> $${data.total_amount}</p>
+                    <p class="mb-1"><strong>Price per Ticket:</strong> ₹${data.ticket_tier.price.toFixed(2)}</p>
+                    <p class="mb-0"><strong>Total Amount:</strong> ₹${data.total_amount.toFixed(2)}</p>
                 </div>
                 <div>
                     <h6 class="mb-2">Booking Status</h6>
                     <p class="mb-1"><strong>Booked On:</strong> ${new Date(data.created_at).toLocaleString()}</p>
-                    <p class="mb-1"><strong>Status:</strong> ${data.is_checked_in ? 'Checked In' : data.is_refunded ? 'Refunded' : 'Confirmed'}</p>
-                    ${data.is_checked_in ? `<p class="mb-0"><strong>Checked In At:</strong> ${new Date(data.checked_in_at).toLocaleString()}</p>` : ''}
-                    ${data.is_refunded ? `<p class="mb-0"><strong>Refunded On:</strong> ${new Date(data.refunded_at).toLocaleString()}</p>` : ''}
+                    <p class="mb-1"><strong>Status:</strong> ${data.check_in_status ? 'Checked In' : data.status === 'refunded' ? 'Refunded' : 'Confirmed'}</p>
+                    ${data.check_in_status ? `<p class="mb-0"><strong>Checked In At:</strong> ${new Date(data.checked_in_at).toLocaleString()}</p>` : ''}
+                    ${data.status === 'refunded' ? `<p class="mb-0"><strong>Refunded On:</strong> ${new Date(data.refunded_at).toLocaleString()}</p>` : ''}
                 </div>
             `;
             new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
@@ -347,7 +347,7 @@ function processRefund(bookingId) {
 
 // Export bookings
 function exportBookings() {
-    window.location.href = `/api/events/${{{ event.id }}}/bookings/export`;
+    window.location.href = '/api/events/{{ event.id }}/bookings/export';
 }
 </script>
 {% endblock scripts %} 

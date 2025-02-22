@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
-from models import db, User, Event, Booking, Train, TrainBooking, Station, Flight, FlightBooking, Airport, Airline
+from models import db, User, Event, Booking, Train, TrainBooking, Station, Flight, FlightBooking, Airport, Airline, Wallet, Transaction
 import os
 from datetime import datetime
 from dotenv import load_dotenv
@@ -17,6 +17,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, DateTimeField, IntegerField, SelectField, BooleanField, FloatField
 from wtforms.validators import DataRequired, Length, NumberRange, ValidationError
 import razorpay
+from io import StringIO
+import csv
 
 # Load environment variables
 load_dotenv()
@@ -170,10 +172,52 @@ def book_event(event_id):
                 'phone': request.form.get('attendee_phone')
             }
             
-            # Validate attendee details
-            if not attendee_details['name'] or not attendee_details['email']:
-                flash('Name and email are required')
-                return redirect(url_for('book_event', event_id=event_id))
+            # Add additional fields if enabled in event settings
+            if event.ticket_fields.get('age', {}).get('enabled'):
+                attendee_details['age'] = request.form.get('attendee_age')
+                
+            if event.ticket_fields.get('gender', {}).get('enabled'):
+                attendee_details['gender'] = request.form.get('attendee_gender')
+                
+            if event.ticket_fields.get('id_proof', {}).get('enabled'):
+                attendee_details['id_proof'] = {
+                    'type': request.form.get('attendee_id_type'),
+                    'number': request.form.get('attendee_id_number')
+                }
+                
+            if event.ticket_fields.get('address', {}).get('enabled'):
+                attendee_details['address'] = request.form.get('attendee_address')
+                
+            # Handle custom fields
+            custom_fields = {}
+            for field in event.ticket_fields.get('custom_fields', []):
+                field_name = field['name']
+                custom_fields[field_name] = request.form.get(f'attendee_custom_{field_name}')
+            if custom_fields:
+                attendee_details['custom_fields'] = custom_fields
+            
+            # Validate required fields
+            required_fields = []
+            for field, config in event.ticket_fields.items():
+                if field == 'custom_fields':
+                    continue
+                if isinstance(config, dict) and config.get('required') and config.get('enabled'):
+                    required_fields.append(field)
+            
+            for field in required_fields:
+                if field == 'id_proof':
+                    if not attendee_details.get('id_proof', {}).get('type') or not attendee_details.get('id_proof', {}).get('number'):
+                        flash('ID proof type and number are required')
+                        return redirect(url_for('book_event', event_id=event_id))
+                elif not attendee_details.get(field):
+                    flash(f'{field.title()} is required')
+                    return redirect(url_for('book_event', event_id=event_id))
+            
+            # Validate custom fields
+            for field in event.ticket_fields.get('custom_fields', []):
+                if field.get('required') and not custom_fields.get(field['name']):
+                    flash(f'{field["label"]} is required')
+                    return redirect(url_for('book_event', event_id=event_id))
             
             if num_tickets <= 0:
                 flash('Please select at least one ticket')
@@ -215,7 +259,6 @@ def book_event(event_id):
                     num_tickets=num_tickets,
                     total_price=total_price,
                     tier_id=ticket_tier,
-                    tier_name=selected_tier['name'],  # Store the tier name
                     status='pending',  # Set initial status as pending until payment
                     attendee_details=attendee_details
                 )
@@ -648,19 +691,69 @@ def become_host():
 @login_required
 @host_required
 def host_dashboard():
+    # Get all events for this host
     events = Event.query.filter_by(host_id=current_user.id).order_by(Event.created_at.desc()).all()
-    active_events = [e for e in events if e.status == 'published' and e.end_date > datetime.utcnow()]
+    
+    # Get upcoming events (events that haven't ended yet)
+    now = datetime.utcnow()
+    upcoming_events = [e for e in events if e.end_date > now]
+    
+    # Calculate statistics
+    total_revenue = sum(b.total_price for e in events for b in e.bookings if b.status == 'completed')
+    total_tickets = sum(len([b for b in e.bookings if b.status == 'completed']) for e in events)
+    total_capacity = sum(e.total_seats for e in events)
+    total_attendees = sum(len([b for b in e.bookings if b.check_in_status]) for e in events)
+    
+    # Get recent activities (last 10)
+    recent_activities = []
+    
+    # Add booking activities
+    for event in events:
+        for booking in event.bookings:
+            recent_activities.append({
+                'type': 'booking',
+                'message': f'New booking for {event.name}',
+                'timestamp': booking.booking_date,
+                'event': event
+            })
+    
+    # Add event updates
+    for event in events:
+        if event.updated_at and event.updated_at > event.created_at:
+            recent_activities.append({
+                'type': 'event_update',
+                'message': f'Updated event: {event.name}',
+                'timestamp': event.updated_at,
+                'event': event
+            })
+        if event.status == 'published':
+            recent_activities.append({
+                'type': 'event_publish',
+                'message': f'Published event: {event.name}',
+                'timestamp': event.created_at,
+                'event': event
+            })
+    
+    # Sort activities by timestamp and get last 10
+    recent_activities.sort(key=lambda x: x['timestamp'], reverse=True)
+    recent_activities = recent_activities[:10]
     
     stats = {
         'total_events': len(events),
-        'active_events': len(active_events),
+        'active_events': len([e for e in events if e.status == 'published' and e.end_date > now]),
         'published_events': len([e for e in events if e.status == 'published']),
-        'total_tickets': sum(len(e.bookings) for e in events),
-        'total_capacity': sum(e.total_seats for e in events),
-        'total_bookings': sum(len(e.bookings) for e in events),
-        'total_revenue': sum(b.total_price for e in events for b in e.bookings)
+        'total_tickets': total_tickets,
+        'total_capacity': total_capacity,
+        'total_revenue': total_revenue,
+        'total_attendees': total_attendees,
+        'ticket_utilization': (total_tickets / total_capacity * 100) if total_capacity > 0 else 0
     }
-    return render_template('events/host_dashboard.html', events=events, stats=stats)
+    
+    return render_template('events/host_dashboard.html', 
+                         events=events,
+                         upcoming_events=upcoming_events[:5],  # Show only next 5 events
+                         stats=stats,
+                         recent_activities=recent_activities)
 
 @app.route('/host/events')
 @login_required
@@ -753,6 +846,44 @@ def new_event():
                 'lng': float(request.form.get('venue_lng', 0.0))
             }
             
+            # Process ticket fields configuration
+            ticket_fields = {
+                'name': {
+                    'enabled': bool(request.form.get('ticket_fields[name][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[name][required]'))
+                },
+                'email': {
+                    'enabled': bool(request.form.get('ticket_fields[email][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[email][required]'))
+                },
+                'phone': {
+                    'enabled': bool(request.form.get('ticket_fields[phone][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[phone][required]'))
+                },
+                'age': {
+                    'enabled': bool(request.form.get('ticket_fields[age][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[age][required]'))
+                },
+                'gender': {
+                    'enabled': bool(request.form.get('ticket_fields[gender][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[gender][required]'))
+                },
+                'id_proof': {
+                    'enabled': bool(request.form.get('ticket_fields[id_proof][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[id_proof][required]'))
+                },
+                'address': {
+                    'enabled': bool(request.form.get('ticket_fields[address][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[address][required]'))
+                },
+                'custom_fields': []  # Add support for custom fields if needed
+            }
+            
+            # Ensure at least name and email are enabled
+            if not ticket_fields['name']['enabled'] or not ticket_fields['email']['enabled']:
+                flash('Name and email fields must be enabled')
+                return redirect(url_for('new_event'))
+            
             # Create the event with the appropriate status based on action
             event = Event(
                 host_id=current_user.id,
@@ -773,7 +904,8 @@ def new_event():
                 show_remaining_tickets=bool(request.form.get('show_remaining_tickets')),
                 enable_waitlist=bool(request.form.get('enable_waitlist')),
                 booking_deadline=int(request.form.get('booking_deadline', 0)),
-                ticket_limit=int(request.form.get('ticket_limit', 0))
+                ticket_limit=int(request.form.get('ticket_limit', 0)),
+                ticket_fields=ticket_fields
             )
             
             # Handle file uploads
@@ -795,7 +927,34 @@ def new_event():
             flash(f'Error creating event: {str(e)}')
             return redirect(url_for('new_event'))
             
-    return render_template('events/event_form.html', form=form)
+    # Create a dummy event with default values
+    dummy_event = Event(
+        host_id=current_user.id,
+        name='',
+        description='',
+        event_type='',
+        start_date=datetime.now(),
+        end_date=datetime.now(),
+        venue='',
+        venue_address='',
+        venue_coordinates={'lat': 0.0, 'lng': 0.0},
+        total_seats=0,
+        available_seats=0,
+        price_tiers=[],
+        status='draft',
+        ticket_fields={
+            'name': {'required': True, 'enabled': True},
+            'email': {'required': True, 'enabled': True},
+            'phone': {'required': False, 'enabled': True},
+            'age': {'required': False, 'enabled': False},
+            'gender': {'required': False, 'enabled': False},
+            'id_proof': {'required': False, 'enabled': False},
+            'address': {'required': False, 'enabled': False},
+            'custom_fields': []
+        }
+    )
+    
+    return render_template('events/event_form.html', form=form, event=dummy_event)
 
 @app.route('/host/events/<int:event_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -888,6 +1047,47 @@ def edit_event(event_id):
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                     event.featured_image = filename
             
+            # Process ticket fields configuration
+            ticket_fields = {
+                'name': {
+                    'enabled': bool(request.form.get('ticket_fields[name][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[name][required]'))
+                },
+                'email': {
+                    'enabled': bool(request.form.get('ticket_fields[email][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[email][required]'))
+                },
+                'phone': {
+                    'enabled': bool(request.form.get('ticket_fields[phone][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[phone][required]'))
+                },
+                'age': {
+                    'enabled': bool(request.form.get('ticket_fields[age][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[age][required]'))
+                },
+                'gender': {
+                    'enabled': bool(request.form.get('ticket_fields[gender][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[gender][required]'))
+                },
+                'id_proof': {
+                    'enabled': bool(request.form.get('ticket_fields[id_proof][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[id_proof][required]'))
+                },
+                'address': {
+                    'enabled': bool(request.form.get('ticket_fields[address][enabled]')),
+                    'required': bool(request.form.get('ticket_fields[address][required]'))
+                },
+                'custom_fields': []  # Add support for custom fields if needed
+            }
+            
+            # Ensure at least name and email are enabled
+            if not ticket_fields['name']['enabled'] or not ticket_fields['email']['enabled']:
+                flash('Name and email fields must be enabled')
+                return redirect(url_for('edit_event', event_id=event_id))
+            
+            # Update event with new ticket fields
+            event.ticket_fields = ticket_fields
+            
             db.session.commit()
             flash(f'Event {action}ed successfully!')
             return redirect(url_for('host_dashboard'))
@@ -967,100 +1167,368 @@ def cancel_event(event_id):
         flash('You do not have permission to cancel this event.')
         return redirect(url_for('host_events'))
         
-    event.status = 'cancelled'
-    db.session.commit()
-    
-    # Notify all ticket holders
-    for booking in event.bookings:
-        # TODO: Implement notification system
-        pass
-    
-    flash('Event cancelled successfully!')
-    return redirect(url_for('edit_event', event_id=event.id))
+    try:
+        # Start transaction
+        event.status = 'cancelled'
+        event.cancelled_at = datetime.utcnow()
+        
+        # Notify all ticket holders about cancellation
+        for booking in event.bookings:
+            if booking.status == 'completed':
+                # TODO: Implement notification system
+                # TODO: Handle refunds through payment gateway
+                booking.status = 'refunded'
+                booking.refunded_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('Event cancelled successfully. All ticket holders will be notified.')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling event: {str(e)}')
+        
+    return redirect(url_for('host_dashboard'))
 
 @app.route('/host/events/<int:event_id>/bookings')
 @login_required
 @host_required
 def event_bookings(event_id):
-    event = Event.query.get_or_404(event_id)
+    # Get event with bookings relationship eagerly loaded
+    event = Event.query.options(db.joinedload(Event.bookings)).get_or_404(event_id)
     
     if event.host_id != current_user.id:
         flash('You do not have permission to view these bookings.')
         return redirect(url_for('host_events'))
-        
-    bookings = Booking.query.filter_by(event_id=event.id).order_by(Booking.booking_date.desc()).all()
-    return render_template('events/event_bookings.html', event=event, bookings=bookings)
+    
+    # Get bookings sorted by date
+    bookings = sorted(event.bookings, key=lambda x: x.booking_date, reverse=True)
+    
+    # Calculate statistics
+    stats = {
+        'total_tickets': sum(b.num_tickets for b in bookings),
+        'total_revenue': sum(b.total_price for b in bookings if b.status == 'completed'),
+        'checked_in': sum(1 for b in bookings if b.check_in_status),
+        'refunded': sum(1 for b in bookings if b.status == 'refunded')
+    }
+    
+    return render_template('events/event_bookings.html', event=event, bookings=bookings, stats=stats)
 
 @app.route('/process-payment/<booking_type>/<int:booking_id>', methods=['GET', 'POST'])
 @login_required
 def process_payment(booking_type, booking_id):
-    if booking_type == 'flight':
-        booking = FlightBooking.query.get_or_404(booking_id)
-        amount = booking.total_fare
-    elif booking_type == 'train':
-        booking = TrainBooking.query.get_or_404(booking_id)
-        amount = booking.total_fare
-    else:
-        booking = Booking.query.get_or_404(booking_id)
-        amount = booking.total_price
+    print(f"DEBUG: Payment route hit for booking_type={booking_type}, booking_id={booking_id}")
+    try:
+        if booking_type == 'flight':
+            booking = FlightBooking.query.get_or_404(booking_id)
+            amount = booking.total_fare
+        elif booking_type == 'train':
+            booking = TrainBooking.query.get_or_404(booking_id)
+            amount = booking.total_fare
+        else:
+            booking = Booking.query.get_or_404(booking_id)
+            amount = booking.total_price
+        
+        print(f"DEBUG: Found booking with amount={amount}")
+        
+        if booking.user_id != current_user.id:
+            flash('Unauthorized access', 'error')
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            print("DEBUG: Processing POST request")
+            try:
+                # Get payment details from form
+                payment_id = request.form.get('razorpay_payment_id')
+                order_id = request.form.get('razorpay_order_id')
+                signature = request.form.get('razorpay_signature')
+                
+                print(f"DEBUG: Payment details received - payment_id={payment_id}, order_id={order_id}")
+                
+                if not payment_id or not order_id or not signature:
+                    flash('Missing payment details', 'error')
+                    return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+                
+                # Verify the payment signature
+                params_dict = {
+                    'razorpay_payment_id': payment_id,
+                    'razorpay_order_id': order_id,
+                    'razorpay_signature': signature
+                }
+                
+                # Verify signature
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                
+                # Verify payment status
+                payment = razorpay_client.payment.fetch(payment_id)
+                if payment['status'] != 'captured':
+                    flash('Payment not completed', 'error')
+                    return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+                
+                # Update booking status
+                booking.payment_status = 'completed'
+                booking.payment_id = payment_id
+                booking.status = 'confirmed'  # Update booking status
+                db.session.commit()
+                
+                flash('Payment processed successfully!', 'success')
+                
+                if booking_type == 'flight':
+                    return redirect(url_for('my_flight_bookings'))
+                elif booking_type == 'train':
+                    return redirect(url_for('my_train_bookings'))
+                else:
+                    return redirect(url_for('my_bookings'))
+                    
+            except razorpay.errors.SignatureVerificationError:
+                db.session.rollback()
+                flash('Payment verification failed: Invalid signature', 'error')
+                return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+            except razorpay.errors.RazorpayError as e:
+                db.session.rollback()
+                flash(f'Payment processing failed: {str(e)}', 'error')
+                return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'An error occurred: {str(e)}', 'error')
+                return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+        
+        try:
+            # Check if there's an existing order for this booking
+            if booking.payment_id:
+                flash('This booking has already been paid for', 'error')
+                return redirect(url_for('my_bookings'))
+            
+            # Create Razorpay Order
+            amount_in_paise = int(amount * 100)  # Convert to paise
+            order_data = {
+                'amount': amount_in_paise,
+                'currency': 'INR',
+                'payment_capture': 1,
+                'notes': {
+                    'booking_type': booking_type,
+                    'booking_id': str(booking_id)
+                }
+            }
+            print(f"DEBUG: Creating Razorpay order with data: {order_data}")
+            order = razorpay_client.order.create(order_data)
+            print(f"DEBUG: Razorpay order created: {order}")
+            
+            return render_template(
+                'payment/process.html',
+                booking=booking,
+                booking_type=booking_type,
+                razorpay_order_id=order['id'],
+                razorpay_key_id=os.getenv('RAZORPAY_KEY_ID'),
+                amount=amount,
+                currency='INR'
+            )
+        except razorpay.errors.RazorpayError as e:
+            flash(f'Error creating payment order: {str(e)}', 'error')
+            return redirect(url_for('index'))
+        except Exception as e:
+            flash(f'An error occurred: {str(e)}', 'error')
+            return redirect(url_for('index'))
+            
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/api/bookings/<int:booking_id>')
+@login_required
+def get_booking_details(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    if booking.event.host_id != current_user.id:
+        return jsonify({'error': 'Unauthorized access'}), 403
     
-    if booking.user_id != current_user.id:
-        flash('Unauthorized access', 'error')
+    return jsonify({
+        'id': booking.id,
+        'user': {
+            'name': booking.user.name if booking.user else 'Unknown User',
+            'email': booking.user.email if booking.user else 'No email',
+            'phone': booking.user.phone if booking.user else None
+        },
+        'ticket_tier': booking.ticket_tier,
+        'quantity': booking.num_tickets,
+        'total_amount': booking.total_price,
+        'created_at': booking.created_at.isoformat() if booking.created_at else None,
+        'check_in_status': booking.check_in_status,
+        'checked_in_at': booking.checked_in_at.isoformat() if booking.checked_in_at else None,
+        'status': booking.status,
+        'refunded_at': booking.refunded_at.isoformat() if booking.refunded_at else None
+    })
+
+@app.route('/api/bookings/<int:booking_id>/check-in', methods=['POST'])
+@login_required
+def check_in_booking(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    if booking.event.host_id != current_user.id:
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    if booking.check_in_status:
+        return jsonify({'error': 'Booking already checked in'}), 400
+    
+    if booking.status == 'refunded':
+        return jsonify({'error': 'Cannot check in refunded booking'}), 400
+    
+    booking.check_in_status = True
+    booking.checked_in_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/bookings/<int:booking_id>/refund', methods=['POST'])
+@login_required
+def refund_booking(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    if booking.event.host_id != current_user.id:
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    if booking.status == 'refunded':
+        return jsonify({'error': 'Booking already refunded'}), 400
+    
+    if booking.check_in_status:
+        return jsonify({'error': 'Cannot refund checked-in booking'}), 400
+    
+    # Process refund through payment gateway
+    try:
+        razorpay_client.payment.refund(booking.payment_id)
+        booking.status = 'refunded'
+        booking.refunded_at = datetime.utcnow()
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/events/<int:event_id>/bookings/export')
+@login_required
+def export_event_bookings(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.host_id != current_user.id:
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    # Create CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Booking ID', 'Customer Name', 'Email', 'Ticket Type', 'Quantity', 'Total Amount', 'Status', 'Booked On'])
+    
+    for booking in event.bookings:
+        writer.writerow([
+            booking.id,
+            booking.user.name if booking.user else 'Unknown User',
+            booking.user.email if booking.user else 'No email',
+            booking.ticket_tier.get('name', 'Standard') if booking.ticket_tier else 'Standard',
+            booking.num_tickets,
+            booking.total_price,
+            'Checked In' if booking.check_in_status else 'Refunded' if booking.status == 'refunded' else 'Confirmed',
+            booking.created_at.strftime('%Y-%m-%d %H:%M:%S') if booking.created_at else 'N/A'
+        ])
+    
+    # Create response
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=bookings_{event_id}_{datetime.now().strftime("%Y%m%d")}.csv'}
+    )
+
+@app.route('/bookings/<int:booking_id>/ticket')
+@login_required
+def view_ticket(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if user has permission to view this ticket
+    if booking.user_id != current_user.id and booking.event.host_id != current_user.id:
+        flash('You do not have permission to view this ticket.')
         return redirect(url_for('index'))
     
+    return render_template('tickets/ticket.html', booking=booking)
+
+@app.route('/wallet')
+@login_required
+def wallet():
+    # Create wallet if it doesn't exist
+    if not current_user.wallet:
+        wallet = Wallet(user_id=current_user.id)
+        db.session.add(wallet)
+        db.session.commit()
+    
+    # Query transactions directly instead of using relationship property
+    transactions = Transaction.query.filter_by(wallet_id=current_user.wallet.id).order_by(Transaction.created_at.desc()).limit(10).all()
+    return render_template('wallet/index.html', wallet=current_user.wallet, transactions=transactions)
+
+@app.route('/wallet/add', methods=['GET', 'POST'])
+@login_required
+def add_money():
     if request.method == 'POST':
         try:
-            # Verify the payment signature
-            params_dict = {
-                'razorpay_payment_id': request.form.get('razorpay_payment_id'),
-                'razorpay_order_id': request.form.get('razorpay_order_id'),
-                'razorpay_signature': request.form.get('razorpay_signature')
-            }
+            amount = float(request.form.get('amount', 0))
+            if amount <= 0:
+                flash('Please enter a valid amount')
+                return redirect(url_for('add_money'))
             
-            # Verify signature
-            razorpay_client.utility.verify_payment_signature(params_dict)
+            # Initialize Razorpay client
+            client = razorpay.Client(auth=(os.getenv('RAZORPAY_KEY_ID'), os.getenv('RAZORPAY_KEY_SECRET')))
             
-            # Update booking status
-            booking.payment_status = 'completed'
-            booking.payment_id = request.form.get('razorpay_payment_id')
-            db.session.commit()
+            # Create Razorpay order
+            order_amount = int(amount * 100)  # Convert to paise
+            order_currency = 'INR'
+            order_receipt = f'wallet_topup_{current_user.id}_{int(datetime.utcnow().timestamp())}'
             
-            flash('Payment processed successfully!', 'success')
+            order = client.order.create({
+                'amount': order_amount,
+                'currency': order_currency,
+                'receipt': order_receipt,
+                'payment_capture': 1
+            })
             
-            if booking_type == 'flight':
-                return redirect(url_for('my_flight_bookings'))
-            elif booking_type == 'train':
-                return redirect(url_for('my_train_bookings'))
-            else:
-                return redirect(url_for('my_bookings'))
-                
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Payment verification failed: {str(e)}', 'error')
-            return redirect(url_for('process_payment', booking_type=booking_type, booking_id=booking_id))
+            return render_template(
+                'wallet/payment.html',
+                order_id=order['id'],
+                amount=amount,
+                key_id=os.getenv('RAZORPAY_KEY_ID')
+            )
+            
+        except ValueError:
+            flash('Please enter a valid amount')
+            return redirect(url_for('add_money'))
     
+    return render_template('wallet/add_money.html')
+
+@app.route('/wallet/add/success', methods=['POST'])
+@login_required
+def payment_success():
     try:
-        # Create Razorpay Order
-        amount_in_paise = int(amount * 100)  # Convert to paise
-        order_data = {
-            'amount': amount_in_paise,
-            'currency': 'INR',
-            'payment_capture': 1
-        }
-        order = razorpay_client.order.create(order_data)
+        # Verify payment signature
+        client = razorpay.Client(auth=(os.getenv('RAZORPAY_KEY_ID'), os.getenv('RAZORPAY_KEY_SECRET')))
         
-        return render_template(
-            'payment/process.html',
-            booking=booking,
-            booking_type=booking_type,
-            razorpay_order_id=order['id'],
-            razorpay_key_id=os.getenv('RAZORPAY_KEY_ID'),
+        payment_id = request.form.get('razorpay_payment_id')
+        order_id = request.form.get('razorpay_order_id')
+        signature = request.form.get('razorpay_signature')
+        
+        client.utility.verify_payment_signature({
+            'razorpay_payment_id': payment_id,
+            'razorpay_order_id': order_id,
+            'razorpay_signature': signature
+        })
+        
+        # Get payment details
+        payment = client.payment.fetch(payment_id)
+        amount = float(payment['amount']) / 100  # Convert from paise to rupees
+        
+        # Add money to wallet
+        current_user.wallet.add_money(
             amount=amount,
-            currency='INR'
+            transaction_type='deposit',
+            reference_id=payment_id,
+            description=f'Added ₹{amount} via Razorpay'
         )
+        
+        flash('Money added to wallet successfully!')
+        return redirect(url_for('wallet'))
+        
     except Exception as e:
-        flash(f'Error creating payment order: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        flash('Payment verification failed')
+        return redirect(url_for('wallet'))
 
 if __name__ == '__main__':
     with app.app_context():

@@ -6,6 +6,7 @@ import random
 import string
 import json
 from io import BytesIO
+from flask import url_for
 
 db = SQLAlchemy()
 
@@ -23,12 +24,74 @@ class User(UserMixin, db.Model):
     train_bookings = db.relationship('TrainBooking', back_populates='user', lazy=True)
     flight_bookings = db.relationship('FlightBooking', back_populates='user', lazy=True)
     hosted_events = db.relationship('Event', back_populates='host', lazy=True)
+    wallet = db.relationship('Wallet', back_populates='user', uselist=False, lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class Wallet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    balance = db.Column(db.Float, nullable=False, default=0.0)
+    currency = db.Column(db.String(3), nullable=False, default='INR')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', back_populates='wallet', lazy=True)
+    transactions = db.relationship('Transaction', back_populates='wallet', lazy=True)
+
+    def add_money(self, amount, transaction_type='deposit', reference_id=None, description=None):
+        """Add money to wallet and create a transaction record."""
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+            
+        self.balance += amount
+        transaction = Transaction(
+            wallet_id=self.id,
+            amount=amount,
+            type=transaction_type,
+            reference_id=reference_id,
+            description=description or f"Added ₹{amount} to wallet"
+        )
+        db.session.add(transaction)
+        db.session.commit()
+        return transaction
+
+    def deduct_money(self, amount, transaction_type='payment', reference_id=None, description=None):
+        """Deduct money from wallet and create a transaction record."""
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+        if amount > self.balance:
+            raise ValueError("Insufficient balance")
+            
+        self.balance -= amount
+        transaction = Transaction(
+            wallet_id=self.id,
+            amount=-amount,  # Negative amount for deductions
+            type=transaction_type,
+            reference_id=reference_id,
+            description=description or f"Deducted ₹{amount} from wallet"
+        )
+        db.session.add(transaction)
+        db.session.commit()
+        return transaction
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)  # Positive for credit, negative for debit
+    type = db.Column(db.String(20), nullable=False)  # deposit, payment, refund, withdrawal
+    status = db.Column(db.String(20), nullable=False, default='completed')
+    reference_id = db.Column(db.String(100), nullable=True)  # For linking to bookings, etc.
+    description = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    wallet = db.relationship('Wallet', back_populates='transactions', lazy=True)
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,7 +166,7 @@ class Event(db.Model):
         """Get the full URL for the featured image."""
         if not self.featured_image:
             return None
-        return f'/static/uploads/{self.featured_image}'
+        return url_for('static', filename=f'uploads/{self.featured_image}')
 
     def to_dict(self):
         """Convert event object to dictionary."""
@@ -132,76 +195,70 @@ class Event(db.Model):
         }
 
 class Booking(db.Model):
+    __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
     num_tickets = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    booking_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    status = db.Column(db.String(20), nullable=False, default='pending')
-    tier_id = db.Column(db.String(50), nullable=False)
-    attendee_details = db.Column(db.JSON, nullable=False)
-    ticket_code = db.Column(db.String(20), nullable=False)
-    qr_code = db.Column(db.String(500), nullable=True)
-    barcode = db.Column(db.String(500), nullable=True)
-    check_in_time = db.Column(db.DateTime, nullable=True)
-    check_in_status = db.Column(db.Boolean, nullable=False, default=False)
-
+    tier_id = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(20), default='pending')  # pending, completed, cancelled, refunded
+    booking_date = db.Column(db.DateTime, default=datetime.utcnow)
+    payment_id = db.Column(db.String(100), nullable=True)
+    attendee_details = db.Column(db.JSON, nullable=True)
+    check_in_status = db.Column(db.Boolean, default=False)
+    checked_in_at = db.Column(db.DateTime, nullable=True)
+    refunded_at = db.Column(db.DateTime, nullable=True)
+    ticket_code = db.Column(db.String(20), nullable=True)
+    qr_code = db.Column(db.Text, nullable=True)
+    barcode = db.Column(db.Text, nullable=True)
+    
     # Relationships
-    event = db.relationship('Event', back_populates='bookings', lazy=True)
     user = db.relationship('User', back_populates='bookings', lazy=True)
-
+    event = db.relationship('Event', back_populates='bookings', lazy=True)
+    
+    @property
+    def ticket_tier(self):
+        """Get the ticket tier information."""
+        if not self.event or not self.event.price_tiers or not self.tier_id:
+            return {'name': 'Standard', 'price': self.total_price / self.num_tickets}
+        
+        # Handle both list and dictionary cases
+        tiers = self.event.price_tiers
+        if isinstance(tiers, list):
+            # If tiers is a list, find matching tier by id
+            for tier in tiers:
+                if isinstance(tier, dict) and str(tier.get('id', '')) == str(self.tier_id):
+                    return tier
+        elif isinstance(tiers, dict):
+            # If tiers is a dictionary, use get method
+            return tiers.get(str(self.tier_id), {'name': 'Standard', 'price': self.total_price / self.num_tickets})
+        
+        # Return default if no match found
+        return {'name': 'Standard', 'price': self.total_price / self.num_tickets}
+    
     def generate_ticket_code(self):
         """Generate a unique ticket code."""
-        # Generate a random 8-character code
-        chars = string.ascii_uppercase + string.digits
-        while True:
-            code = ''.join(random.choices(chars, k=8))
-            # Check if code already exists
-            if not Booking.query.filter_by(ticket_code=code).first():
-                return code
-
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        while Booking.query.filter_by(ticket_code=code).first():
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        return code
+    
     def generate_qr_code(self):
-        """Generate a QR code containing booking information."""
-        import qrcode
-        import base64
-        from io import BytesIO
-
-        # Create QR code data
+        """Generate QR code for the ticket."""
+        from utils.ticket_utils import generate_qr_code
         data = {
             'booking_id': self.id,
             'event_id': self.event_id,
             'ticket_code': self.ticket_code,
-            'num_tickets': self.num_tickets
+            'attendee': self.attendee_details.get('name') if isinstance(self.attendee_details, dict) else None
         }
-        
-        # Generate QR code
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(json.dumps(data))
-        qr.make(fit=True)
-        
-        # Create image and convert to base64
-        img = qr.make_image(fill_color="black", back_color="white")
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        return f"data:image/png;base64,{base64.b64encode(buffered.getvalue()).decode()}"
-
+        return generate_qr_code(json.dumps(data))
+    
     def generate_barcode(self):
-        """Generate a barcode containing the ticket code."""
-        import barcode
-        from barcode.writer import ImageWriter
-        import base64
-        from io import BytesIO
-
-        # Generate Code128 barcode
-        code128 = barcode.get('code128', self.ticket_code, writer=ImageWriter())
-        
-        # Save to BytesIO buffer
-        buffered = BytesIO()
-        code128.write(buffered)
-        
-        # Convert to base64
-        return f"data:image/png;base64,{base64.b64encode(buffered.getvalue()).decode()}"
+        """Generate barcode for the ticket."""
+        from utils.ticket_utils import generate_barcode
+        return generate_barcode(self.ticket_code)
 
 class Train(db.Model):
     id = db.Column(db.Integer, primary_key=True)

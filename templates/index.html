@@ -3,158 +3,69 @@
 {% block title %}Tickety - Book Events, Trains & Flights{% endblock %}
 
 {% block header %}
-<div class="hero-section position-relative overflow-hidden min-vh-100 d-flex align-items-center">
-    <!-- Animated background gradient -->
-    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(244, 114, 182, 0.1)); animation: gradientAnimation 15s ease infinite; z-index: -1;"></div>
+<div class="hero-section position-relative d-flex align-items-center py-5">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(244, 114, 182, 0.05)); z-index: -1;"></div>
     
-    <!-- Floating shapes -->
-    <div class="floating-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-    </div>
-
-    <div class="container position-relative">
+    <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-5 py-5" data-aos="fade-up" data-aos-delay="100">
-                <span class="badge bg-primary-subtle text-primary mb-3 px-3 py-2 rounded-pill">
-                    <i class="bi bi-stars me-2"></i>Welcome to Tickety
-                </span>
-                <h1 class="display-3 fw-bold mb-4 text-gradient">Your Gateway to Amazing Experiences</h1>
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4 text-gradient">Your Gateway to Amazing Experiences</h1>
                 <p class="lead text-muted mb-4">Discover and book unforgettable events, seamless train journeys, and exciting flights - all in one place.</p>
                 
-                <!-- Quick Stats -->
-                <div class="row g-3 mb-4">
-                    <div class="col-4">
-                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
-                            <i class="bi bi-calendar-check text-primary mb-2"></i>
-                            <h4 class="mb-0">500+</h4>
-                            <p class="small text-muted mb-0">Events</p>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
-                            <i class="bi bi-train-front text-primary mb-2"></i>
-                            <h4 class="mb-0">100+</h4>
-                            <p class="small text-muted mb-0">Routes</p>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="quick-stat p-3 rounded-4 bg-white bg-opacity-75 text-center">
-                            <i class="bi bi-people text-primary mb-2"></i>
-                            <h4 class="mb-0">10K+</h4>
-                            <p class="small text-muted mb-0">Users</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="quick-actions d-flex flex-wrap gap-2 mb-4">
-                    <a href="#events-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
-                        <i class="bi bi-calendar-event text-primary me-2"></i>
-                        <span>Events</span>
-                        <i class="bi bi-chevron-right ms-2"></i>
+                <div class="quick-actions d-flex flex-wrap gap-3 mb-4">
+                    <a href="#events-tab" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-calendar-event me-2"></i>Events
                     </a>
-                    <a href="#trains-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
-                        <i class="bi bi-train-front text-primary me-2"></i>
-                        <span>Trains</span>
-                        <i class="bi bi-chevron-right ms-2"></i>
+                    <a href="#trains-tab" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-train-front me-2"></i>Trains
                     </a>
-                    <a href="#flights-tab" class="btn btn-light btn-lg rounded-pill px-4 py-3 d-flex align-items-center">
-                        <i class="bi bi-airplane text-primary me-2"></i>
-                        <span>Flights</span>
-                        <i class="bi bi-chevron-right ms-2"></i>
+                    <a href="#flights-tab" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-airplane me-2"></i>Flights
                     </a>
                 </div>
 
-                <!-- Trust Badges -->
                 <div class="trust-badges d-flex align-items-center gap-4">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-shield-check text-success me-2"></i>
-                        <span class="small">Secure Booking</span>
+                        <span>Secure Booking</span>
                     </div>
                     <div class="d-flex align-items-center">
                         <i class="bi bi-clock-history text-primary me-2"></i>
-                        <span class="small">24/7 Support</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-cash-coin text-warning me-2"></i>
-                        <span class="small">Best Price</span>
+                        <span>24/7 Support</span>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-7 d-none d-lg-block" data-aos="fade-left" data-aos-delay="200">
-                <!-- Quick Booking Card -->
-                <div class="quick-booking-card bg-white rounded-4 shadow-lg p-4 mb-4">
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="quick-booking-card bg-white rounded-4 shadow-sm p-4">
                     <h5 class="mb-4">Popular Right Now</h5>
-                    <div class="row g-4">
-                        <div class="col-6">
-                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
-                                <div class="d-flex align-items-center">
-                                    <div class="trending-icon me-3">
-                                        <i class="bi bi-music-note-beamed text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">Music Festival</h6>
-                                        <p class="small text-muted mb-0">From $49</p>
-                                    </div>
+                    <div class="trending-items">
+                        <div class="trending-item p-3 mb-3 rounded-3 bg-light">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-music-note-beamed text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Music Festival</h6>
+                                    <p class="small text-muted mb-0">From ₹499</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
-                                <div class="d-flex align-items-center">
-                                    <div class="trending-icon me-3">
-                                        <i class="bi bi-train-front text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">Delhi - Mumbai</h6>
-                                        <p class="small text-muted mb-0">Express Train</p>
-                                    </div>
+                        <div class="trending-item p-3 mb-3 rounded-3 bg-light">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-train-front text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Delhi - Mumbai</h6>
+                                    <p class="small text-muted mb-0">Express Train</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
-                                <div class="d-flex align-items-center">
-                                    <div class="trending-icon me-3">
-                                        <i class="bi bi-airplane text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">BOM - DEL</h6>
-                                        <p class="small text-muted mb-0">From $99</p>
-                                    </div>
+                        <div class="trending-item p-3 rounded-3 bg-light">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-airplane text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">BOM - DEL</h6>
+                                    <p class="small text-muted mb-0">From ₹2,999</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="trending-item p-3 rounded-3 bg-light hover-scale">
-                                <div class="d-flex align-items-center">
-                                    <div class="trending-icon me-3">
-                                        <i class="bi bi-ticket-perforated text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">Comedy Night</h6>
-                                        <p class="small text-muted mb-0">From $29</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- App Download Preview -->
-                <div class="app-preview d-flex align-items-center justify-content-end">
-                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=300&h=200&fit=crop" 
-                         alt="Mobile App" class="img-fluid rounded-4 shadow-lg">
-                    <div class="app-badges ms-4">
-                        <p class="small text-muted mb-2">Get our mobile app</p>
-                        <div class="d-flex gap-2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
-                                 alt="App Store" style="height: 40px;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
-                                 alt="Play Store" style="height: 40px;">
                         </div>
                     </div>
                 </div>
@@ -164,151 +75,33 @@
 </div>
 
 <style>
-    .text-gradient {
-        background: linear-gradient(135deg, #6366f1, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+.text-gradient {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-    .quick-stat {
-        transition: transform 0.3s ease;
-    }
+.hero-section {
+    min-height: 600px;
+}
 
-    .quick-stat:hover {
-        transform: translateY(-5px);
-    }
+.trending-item {
+    transition: all 0.2s ease;
+}
 
-    .quick-stat i {
-        font-size: 1.5rem;
-    }
+.trending-item:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+}
 
-    .trending-item {
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
+.quick-booking-card {
+    background: rgba(255, 255, 255, 0.9);
+}
 
-    .trending-item:hover {
-        transform: translateY(-3px);
-        background: rgba(99, 102, 241, 0.1) !important;
-    }
-
-    .trending-icon {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(99, 102, 241, 0.1);
-        border-radius: 12px;
-    }
-
-    .trending-icon i {
-        font-size: 1.25rem;
-    }
-
-    .quick-booking-card {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-    }
-
-    .quick-actions .btn {
-        transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.9);
-    }
-
-    .quick-actions .btn:hover {
-        transform: translateX(5px);
-        background: white;
-    }
-
-    .trust-badges {
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(5px);
-        border-radius: 100px;
-    }
-
-    .hover-scale {
-        transition: transform 0.3s ease;
-    }
-
-    .hover-scale:hover {
-        transform: scale(1.05);
-    }
-
-    .hover-float {
-        transition: transform 0.3s ease;
-    }
-
-    .hover-float:hover {
-        transform: translateY(-10px);
-    }
-
-    .image-card {
-        position: relative;
-        overflow: hidden;
-        border-radius: 1rem;
-    }
-
-    .image-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-        padding: 1.5rem;
-        color: white;
-        font-weight: 600;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .image-card:hover .image-overlay {
-        opacity: 1;
-    }
-
-    .floating-shapes .shape {
-        position: absolute;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
-        border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
-    }
-
-    .shape-1 {
-        width: 100px;
-        height: 100px;
-        top: 20%;
-        left: 10%;
-        animation-delay: 0s;
-    }
-
-    .shape-2 {
-        width: 150px;
-        height: 150px;
-        top: 60%;
-        right: 10%;
-        animation-delay: 2s;
-    }
-
-    .shape-3 {
-        width: 70px;
-        height: 70px;
-        top: 30%;
-        right: 30%;
-        animation-delay: 4s;
-    }
-
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-        100% { transform: translateY(0px); }
-    }
-
-    @keyframes gradientAnimation {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+.trust-badges {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+}
 </style>
 {% endblock %}
 
@@ -319,13 +112,13 @@
             <div class="card-body p-0">
                 <nav class="booking-nav">
                     <div class="nav nav-tabs nav-fill border-0" role="tablist">
-                        <button class="nav-link active py-4 px-4" data-bs-toggle="tab" data-bs-target="#events-tab" type="button">
+                        <button class="nav-link active py-3 px-3" data-bs-toggle="tab" data-bs-target="#events-tab" type="button">
                             <i class="bi bi-calendar-event me-2"></i>Events
                         </button>
-                        <button class="nav-link py-4 px-4" data-bs-toggle="tab" data-bs-target="#trains-tab" type="button">
+                        <button class="nav-link py-3 px-3" data-bs-toggle="tab" data-bs-target="#trains-tab" type="button">
                             <i class="bi bi-train-front me-2"></i>Trains
                         </button>
-                        <button class="nav-link py-4 px-4" data-bs-toggle="tab" data-bs-target="#flights-tab" type="button">
+                        <button class="nav-link py-3 px-3" data-bs-toggle="tab" data-bs-target="#flights-tab" type="button">
                             <i class="bi bi-airplane me-2"></i>Flights
                         </button>
                     </div>
@@ -617,7 +410,7 @@
 }
 
 .booking-nav .nav-link {
-    padding: 1rem;
+    padding: 0.75rem;
     color: var(--text-muted);
     border: none;
     border-radius: 0;
@@ -689,6 +482,14 @@
 
     .hero-section .btn-group {
         justify-content: center;
+    }
+
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    .booking-nav .nav-link {
+        padding: 0.5rem;
     }
 }
 </style>

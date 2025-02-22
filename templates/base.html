@@ -12,23 +12,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #a855f7;
-            --primary-dark: #9333ea;
-            --primary-light: #c084fc;
-            --secondary-color: #f472b6;
-            --accent-color: #ec4899;
-            --background-color: #faf5ff;
-            --card-background: #ffffff;
-            --text-color: #1e1b4b;
-            --text-muted: #6b7280;
-            --border-color: #f3e8ff;
-            --hover-color: #f5f3ff;
+            --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+            --hover-gradient: linear-gradient(135deg, #4f46e5, #9333ea);
+            --surface-color: #ffffff;
+            --border-color: #e5e7eb;
+            --hover-color: #f8fafc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         body {
-            background-color: var(--background-color);
-            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-            color: var(--text-color);
+            background-color: var(--surface-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
             line-height: 1.6;
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
@@ -36,100 +37,112 @@
         }
         
         .navbar {
-            background: var(--card-background) !important;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
-            padding: 1rem 0;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            padding: 0.75rem 0;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .navbar-brand {
-            font-weight: 700;
-            color: var(--primary-color) !important;
-            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-gradient) !important;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
         }
 
         .nav-link {
-            color: var(--text-muted) !important;
+            color: var(--text-secondary) !important;
             font-weight: 500;
-            padding: 0.5rem 1rem !important;
-            border-radius: 1rem;
-            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            transition: var(--transition);
             margin: 0 0.25rem;
         }
 
         .nav-link:hover, .nav-link.active {
-            color: var(--primary-color) !important;
-            background-color: var(--hover-color);
+            color: var(--primary-gradient) !important;
+            background: var(--hover-color);
             transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-gradient);
+            color: white !important;
         }
 
         .card {
             border: 1px solid var(--border-color);
-            border-radius: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
             overflow: hidden;
-            background: var(--card-background);
+            background: var(--surface-color);
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.1);
-            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
         .card-header {
-            background: var(--card-background);
+            background: transparent;
             border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem;
+            padding: 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
         }
 
         .btn {
-            border-radius: 1rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            letter-spacing: 0.01em;
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             border: none;
-            box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.2);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark), var(--accent-color));
+            background: var(--hover-gradient);
             transform: translateY(-2px);
-            box-shadow: 0 8px 12px -2px rgba(168, 85, 247, 0.3);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-outline-primary {
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
+            color: var(--primary-gradient);
+            border: 2px solid var(--primary-gradient);
             background: transparent;
         }
 
         .btn-outline-primary:hover {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
+            background: var(--primary-gradient);
+            border-color: var(--primary-gradient);
             transform: translateY(-2px);
         }
 
         .badge {
-            padding: 0.5rem 1rem;
             font-weight: 500;
-            border-radius: 1rem;
-            letter-spacing: 0.02em;
+            padding: 0.5em 0.75em;
+            border-radius: 0.5rem;
         }
 
         .badge.bg-primary-subtle {
             background-color: var(--hover-color) !important;
-            color: var(--primary-color) !important;
+            color: var(--primary-gradient) !important;
         }
 
         .alert {
@@ -150,7 +163,7 @@
         .page-header h1 {
             font-weight: 700;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -164,56 +177,47 @@
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             font-size: 0.9375rem;
             padding: 0.5rem 0;
         }
 
         .icon-box i {
-            color: var(--primary-color);
+            color: var(--primary-gradient);
             font-size: 1.1em;
         }
 
         .table {
-            --bs-table-hover-bg: var(--hover-color);
+            margin-bottom: 0;
         }
 
         .table th {
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             text-transform: uppercase;
             font-size: 0.75rem;
             letter-spacing: 0.05em;
         }
 
-        .form-control, .input-group-text {
-            border: 2px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+        .table td {
+            vertical-align: middle;
+            color: var(--text-primary);
         }
 
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .input-group .form-control:focus {
-            border-color: var(--primary-color);
-        }
-
-        .form-select {
-            border: 2px solid var(--border-color);
-            border-radius: 1rem;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.95rem;
-            background-position: right 1.25rem center;
-        }
-
-        .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+            border-color: var(--primary-gradient);
         }
 
         .list-group-item {
@@ -283,13 +287,13 @@
         }
 
         .footer-links a:hover {
-            color: var(--primary-color);
+            color: var(--primary-gradient);
             transform: translateX(5px);
         }
 
         .footer-links i {
             font-size: 1.1em;
-            color: var(--primary-color);
+            color: var(--primary-gradient);
         }
 
         .footer-social {
@@ -303,7 +307,7 @@
             height: 40px;
             border-radius: 50%;
             background: var(--hover-color);
-            color: var(--primary-color);
+            color: var(--primary-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -312,7 +316,7 @@
         }
 
         .social-link:hover {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             color: white;
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(168, 85, 247, 0.2);
@@ -334,20 +338,21 @@
 
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--background-color);
+            background: var(--hover-color);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 1rem;
+            background: var(--text-muted);
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-color);
+            background: var(--text-secondary);
         }
 
         /* Glass effect for cards */
@@ -360,9 +365,10 @@
 
         /* Gradient text */
         .gradient-text {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Mobile Navigation */
@@ -371,7 +377,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--card-background);
+            background: var(--surface-color);
             padding: 0.75rem;
             box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
             z-index: 1000;
@@ -392,7 +398,7 @@
         }
 
         .mobile-nav-link {
-            color: var(--text-muted);
+            color: var(--text-secondary);
             text-decoration: none;
             display: flex;
             flex-direction: column;
@@ -401,7 +407,7 @@
             font-size: 0.75rem;
             padding: 0.5rem;
             border-radius: 0.75rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .mobile-nav-link i {
@@ -409,7 +415,7 @@
         }
 
         .mobile-nav-link.active {
-            color: var(--primary-color);
+            color: var(--primary-gradient);
             background: var(--hover-color);
         }
 
@@ -420,11 +426,11 @@
 
         @media (max-width: 991.98px) {
             .navbar {
-                padding: 0.75rem 1rem;
+                padding: 0.5rem 1rem;
             }
 
             .navbar-brand {
-                font-size: 1.25rem;
+                font-size: 1.125rem;
             }
 
             .mobile-nav {
@@ -480,7 +486,7 @@
         }
 
         .pull-to-refresh i {
-            color: var(--primary-color);
+            color: var(--primary-gradient);
             font-size: 1.5rem;
             animation: spin 1s linear infinite;
         }
@@ -530,16 +536,21 @@
             }
         }
 
-        /* Enhanced scrollbar for mobile */
-        @media (max-width: 991.98px) {
-            ::-webkit-scrollbar {
-                width: 4px;
-            }
+        /* Animation Classes */
+        .hover-lift {
+            transition: var(--transition);
+        }
 
-            ::-webkit-scrollbar-thumb {
-                background: var(--primary-light);
-                border-radius: 4px;
-            }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
+
+        .hover-scale {
+            transition: var(--transition);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -591,6 +602,11 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'my_bookings' %}active{% endif %}" href="{{ url_for('my_bookings') }}">
                                 <i class="bi bi-ticket-perforated"></i> My Bookings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'wallet' %}active{% endif %}" href="{{ url_for('wallet') }}">
+                                <i class="bi bi-wallet2"></i> Wallet
                             </a>
                         </li>
                         <li class="nav-item">
@@ -663,6 +679,12 @@
                     <a class="mobile-nav-link {% if request.endpoint == 'my_bookings' %}active{% endif %}" href="{{ url_for('my_bookings') }}">
                         <i class="bi bi-ticket-perforated"></i>
                         <span>Bookings</span>
+                    </a>
+                </li>
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link {% if request.endpoint == 'wallet' %}active{% endif %}" href="{{ url_for('wallet') }}">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Wallet</span>
                     </a>
                 </li>
                 <li class="mobile-nav-item">
