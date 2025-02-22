@@ -17,12 +17,16 @@ RUN apt-get update \
         gcc \
         libpq-dev \
         curl \
+        python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir gunicorn
+
+# Install Python dependencies with pip upgrade
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn requests
 
 # Copy application code
 COPY . .
