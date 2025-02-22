@@ -15,16 +15,9 @@
                     <button onclick="downloadPDF()" class="btn btn-primary flex-grow-1">
                         <i class="bi bi-download me-2"></i>Download PDF
                     </button>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-share me-2"></i>Share
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="shareWhatsApp()"><i class="bi bi-whatsapp me-2"></i>WhatsApp</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="shareEmail()"><i class="bi bi-envelope me-2"></i>Email</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="shareText()"><i class="bi bi-clipboard me-2"></i>Copy Link</a></li>
-                        </ul>
-                    </div>
+                    <button onclick="copyShareLink()" class="btn btn-outline-primary">
+                        <i class="bi bi-share me-2"></i>Share Ticket
+                    </button>
                 </div>
             </div>
 
@@ -359,23 +352,27 @@ function downloadPDF() {
     window.print();
 }
 
-// Share functions
+function copyShareLink() {
+    const shareUrl = "{{ share_url }}";
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy share link:', err);
+        alert('Failed to copy share link');
+    });
+}
+
 function shareWhatsApp() {
-    const text = `Check out my ticket for ${encodeURIComponent("{{ booking.event.name }}")}!`;
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://wa.me/?text=${text}%20${url}`);
+    const shareUrl = "{{ share_url }}";
+    const text = "Check out my ticket for {{ booking.event.name }}!";
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + shareUrl)}`, '_blank');
 }
 
 function shareEmail() {
-    const subject = encodeURIComponent(`Ticket for {{ booking.event.name }}`);
-    const body = encodeURIComponent(`Check out my ticket for {{ booking.event.name }}!\n\n${window.location.href}`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-}
-
-function shareText() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        alert('Ticket link copied to clipboard!');
-    });
+    const shareUrl = "{{ share_url }}";
+    const subject = "Ticket for {{ booking.event.name }}";
+    const body = "Check out my ticket for {{ booking.event.name }}!\n\n" + shareUrl;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 </script>
 {% endblock content %} 

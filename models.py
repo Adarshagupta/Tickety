@@ -7,6 +7,7 @@ import string
 import json
 from io import BytesIO
 from flask import url_for
+import secrets
 
 db = SQLAlchemy()
 
@@ -212,6 +213,7 @@ class Booking(db.Model):
     ticket_code = db.Column(db.String(20), nullable=True)
     qr_code = db.Column(db.Text, nullable=True)
     barcode = db.Column(db.Text, nullable=True)
+    share_id = db.Column(db.String(32), unique=True, nullable=False)
     
     # Relationships
     user = db.relationship('User', back_populates='bookings', lazy=True)
@@ -259,6 +261,18 @@ class Booking(db.Model):
         """Generate barcode for the ticket."""
         from utils.ticket_utils import generate_barcode
         return generate_barcode(self.ticket_code)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.share_id:
+            self.generate_share_id()
+    
+    def generate_share_id(self):
+        while True:
+            share_id = secrets.token_urlsafe(16)
+            if not Booking.query.filter_by(share_id=share_id).first():
+                self.share_id = share_id
+                break
 
 class Train(db.Model):
     id = db.Column(db.Integer, primary_key=True)

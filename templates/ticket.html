@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if not is_public %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="card-title mb-0">Your Ticket</h2>
+                <div class="share-container">
+                    <button class="btn btn-outline-primary" onclick="copyShareLink()">
+                        <i class="fas fa-share-alt me-2"></i>Share Ticket
+                    </button>
+                    <input type="hidden" id="shareUrl" value="{{ share_url }}">
+                </div>
+            </div>
+            {% else %}
+            <h2 class="card-title mb-4">Event Ticket</h2>
+            {% endif %}
+
+            <div class="ticket-details">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3>{{ booking.event.title }}</h3>
+                        <p class="text-muted">{{ booking.event.start_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        <p><strong>Venue:</strong> {{ booking.event.venue }}</p>
+                        <p><strong>Ticket Holder:</strong> {{ booking.user.name }}</p>
+                        <p><strong>Ticket Type:</strong> {{ booking.ticket_type }}</p>
+                        <p><strong>Ticket Code:</strong> {{ booking.ticket_code }}</p>
+                        {% if booking.qr_code %}
+                        <div class="qr-code mt-3">
+                            <img src="data:image/png;base64,{{ booking.qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        {% if booking.barcode %}
+                        <div class="barcode mt-3">
+                            <img src="data:image/png;base64,{{ booking.barcode }}" alt="Barcode" class="img-fluid">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyShareLink() {
+    const shareUrl = document.getElementById('shareUrl').value;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy share link:', err);
+    });
+}
+</script>
+
+<style>
+.ticket-details {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.share-container {
+    position: relative;
+}
+
+@media print {
+    .share-container,
+    .navbar {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+</style>
+{% endblock %} 

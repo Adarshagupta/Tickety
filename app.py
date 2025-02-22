@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
 from models import db, User, Event, Booking, Train, TrainBooking, Station, Flight, FlightBooking, Airport, Airline, Wallet, Transaction
@@ -1431,17 +1431,19 @@ def export_event_bookings(event_id):
         headers={'Content-Disposition': f'attachment; filename=bookings_{event_id}_{datetime.now().strftime("%Y%m%d")}.csv'}
     )
 
-@app.route('/bookings/<int:booking_id>/ticket')
+@app.route('/ticket/<int:booking_id>')
 @login_required
-def view_ticket(booking_id):
+def ticket(booking_id):
     booking = Booking.query.get_or_404(booking_id)
-    
-    # Check if user has permission to view this ticket
-    if booking.user_id != current_user.id and booking.event.host_id != current_user.id:
-        flash('You do not have permission to view this ticket.')
-        return redirect(url_for('index'))
-    
-    return render_template('tickets/ticket.html', booking=booking)
+    if booking.user_id != current_user.id:
+        abort(403)
+    share_url = url_for('public_ticket', share_id=booking.share_id, _external=True)
+    return render_template('tickets/ticket.html', booking=booking, share_url=share_url)
+
+@app.route('/ticket/share/<share_id>')
+def public_ticket(share_id):
+    booking = Booking.query.filter_by(share_id=share_id).first_or_404()
+    return render_template('tickets/ticket.html', booking=booking, is_public=True)
 
 @app.route('/wallet')
 @login_required
